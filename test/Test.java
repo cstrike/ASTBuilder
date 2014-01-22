@@ -1,6 +1,12 @@
-package abc;
+package abc.xyz.ccc;
 
-public class Test {
+import  java.util.Map;
+import  java.io.BufferedReader;
+
+public abstract final class Test {
+	int a;
+	int b;
+	int c;
 	public void distinctPrimarySum(String[] numbers) {
 		List<String> l = Arrays.asList(numbers);
 		int sum = 0;
@@ -23,4 +29,8 @@ public class Test {
 		        .reduce(0, (x,y) -> x+y); // equivalent to .sum()
 		    System.out.println("distinctPrimarySum result is: " + sum);
 		}
+
+	public static void main(String[] args){
+		return 0;
+	}
 }
