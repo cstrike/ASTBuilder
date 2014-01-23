@@ -1,0 +1,264 @@
+<!DOCTYPE compilationUnit [
+<!ELEMENT compilationUnit (packageDeclaration?, importDeclaration*, typeDeclaration*)>
+
+<!----------Declarations------------>
+
+<!ELEMENT packageDeclaration (name)> <!--Doc comments and annotations are ignored.-->
+<!ELEMENT importDeclaration (name)>
+<!ATTLIST importDeclaration static CDATA #REQUIRED> <!-- boolean -->
+<!ATTLIST importDeclaration onDemand CDATA #REQUIRED> <!-- boolean -->
+<!ELEMENT typeDeclaration (modifier*, simpleName, typeParemeter*, superClassType?, interfaceType*, classBody)>
+<!ATTLIST typeDeclaration interface CDATA #REQUIRED> <!-- boolean -->
+<!ELEMENT typeParameter (identifier, bound?)>
+
+<!ELEMENT bound (referenceType+)>
+<!ELEMENT super (classType)> <!--extends classType-->
+<!ELEMENT classBody (classBodyDeclaration*)>
+<!ELEMENT classBodyDeclaration 
+	  ( fieldDeclaration 
+	  | methodDeclaration 
+	  | staticInitializer 
+	  | constructorDeclaration
+	  | classDeclaration
+)>
+<!ATTLIST classBodyDeclaration id ID #REQUIRED> 
+<!ELEMENT staticInitializer (block)> <!-- static block -->
+<!ELEMENT constructorDeclaration (constructorModifier*, constructorDeclarator, throws?, constructorBody)>
+<!ELEMENT constructorModifier (#PCDATA)> <!-- public | protected | private -->
+<!ELEMENT constructorDeclarator (simpleTypeName, formalParameter*)>
+<!ELEMENT formalParameter (tp, variableDeclaratorId)>
+<!ELEMENT throws (classType*)> <!-- throws classType,... -->
+<!ELEMENT constructorBody (explicitConstructorInvocation?, block)>
+<!ELEMENT explicitConstructorInvocation (invocationKind, argument*)> <!-- this() | super() -->
+<!ELEMENT invocationKind (#PCDATA)> <!--this | super -->
+<!ELEMENT fieldDeclaration  (fieldModifier*, tp, variableDeclarator+)>
+<!ELEMENT fieldModifier (#PCDATA)> <!-- public | protected | private | static | final | transient | volatile -->
+<!ELEMENT variableDeclarator (variableDeclaratorId,  variableInitializer?)> <!-- variableDeclaratorId [= variableInitializer]-->
+<!ELEMENT variableDeclaratorId (identifier, dims)> <!-- dims denote the dimension fo array. If it is zero, means it's not array variable. -->
+<!ELEMENT variableInitializer (expression | arrayInitializer)>
+<!ATTLIST variableInitializer atype CDATA #REQUIRED>
+<!ELEMENT methodDeclaration (methodModifier*, resultType, methodDeclarator, throws?, methodBody)>
+<!ELEMENT resultType (tp | voidType)>
+<!ELEMENT voidType (#PCDATA)> <!-- void is not in tp -->
+<!ELEMENT methodModifier (#PCDATA)> <!-- public | protected | private | static | abstract | final | synchronized | native -->
+<!ELEMENT methodDeclarator (identifier, formalParameter*)>
+<!ELEMENT methodBody (block?)> <!-- Here if there is no block, there is a ";" instead. -->
+<!ELEMENT interfaceDeclaration (interfaceModifier*, identifier, extendsInterfaces?, interfaceBody)>
+<!ATTLIST interfaceDeclaration atype CDATA #REQUIRED>
+<!ELEMENT interfaceModifier (#PCDATA)> <!-- public | abstract -->
+<!ELEMENT extendsInterfaces (interfaceType+)> <!-- extends interfaceType -->
+<!ELEMENT interfaceBody (interfaceMemberDeclaration*)>
+<!ELEMENT interfaceMemberDeclaration (constantDeclaration | abstractMethodDeclaration)>
+<!ATTLIST interfaceMemberDeclaration id ID #REQUIRED>
+<!ELEMENT constantDeclaration (constantModifiers, tp, variableDeclarator)>
+<!ELEMENT constantModifiers (#PCDATA)> <!-- public | static | final -->
+<!ELEMENT abstractMethodDeclaration (abstractMethodModifier*, resultType, methodDeclarator, throws?)>
+<!ELEMENT abstractMethodModifier (#PCDATA)> <!-- public | abstract -->
+<!ELEMENT arrayInitializer (variableInitializer*)>
+
+<!----------Types---------->
+
+<!ELEMENT tp (primitiveType | referenceType)>
+<!ELEMENT primitiveType (#PCDATA)> <!-- boolean | byte | short | int | long | char | float | double -->
+<!ELEMENT referenceType (arrayType | classType | interfaceType)>
+<!ELEMENT classType (typeName, simpleTypeName?)>
+<!ELEMENT interfaceType (typeName, simpleTypeName?)>
+<!ELEMENT arrayType (tp)> <!-- arrayType has already represent "[]" -->
+
+<!----------Blocks and Commands---------->
+
+<!ELEMENT block (statement*)>
+<!ELEMENT statement 
+	  ( localVariableDeclarationStatement
+	  | labeledStatement 
+	  | ifStatement
+	  | whileStatement 
+	  | forStatement
+	  | block
+	  | emptyStatement
+	  | expressionStatement
+	  | switchStatement 
+	  | doStatement
+	  | breakStatement 
+	  | continueStatement
+	  | returnStatement 
+	  | synchronizedStatement 
+	  | throwsStatement 
+	  | tryStatement
+	  | enhancedForStatement
+	  | operationChainStatement
+	  )>
+<!ATTLIST statement
+	  atype CDATA #REQUIRED
+	  marker ID #REQUIRED
+	  isOperationChain CDATA #REQUIRED
+	  eagerOperationType CDATA #REQUIRED>
+<!ELEMENT localVariableDeclarationStatement (localVariableDeclaration)>
+<!ELEMENT localVariableDeclaration (tp, variableDeclarator+)>
+<!ELEMENT emptyStatement EMPTY>
+<!ELEMENT labeledStatement (identifier, statement)>
+<!ELEMENT expressionStatement (statementExpression)> 
+<!ELEMENT statementExpression 
+	  ( assignment
+	  | preincrementExpression 
+	  | postincrementExpression
+	  | predecrementExpression 
+	  | postdecrementExpression 
+	  | methodInvocation
+	  | classInstanceCreationExpression
+	  )>
+<!ELEMENT ifStatement (expression, statement, statement?)>
+<!ATTLIST ifStatement isFilter CDATA #REQUIRED>
+<!ELEMENT switchStatement (expression, switchBlock)>
+<!ELEMENT switchBlock (switchBlockStatementGroup*, switchLabel*)>
+<!ELEMENT switchBlockStatementGroup (switchLabel+, statement+)>
+<!ELEMENT switchLabel (constantExpression)> <!-- If constantExpression is empty or null, it means that no case but default. -->  
+<!ELEMENT whileStatement (expression, statement)>
+<!ELEMENT doStatement (statement, expression)>
+<!ELEMENT forStatement (forInit?, expression?, forUpdate?, statement)>
+<!ELEMENT forInit (statementExpression+ | localVariableDeclaration)>
+<!ELEMENT forUpdate (statementExpression+)>
+<!ELEMENT breakStatement (identifier?)>
+<!ELEMENT continueStatement (identifier?)>
+<!ELEMENT returnStatement (expression?)>
+<!ELEMENT throwsStatement (expression)>
+<!ELEMENT synchronizedStatement (expression, block)>
+<!ELEMENT tryStatement (block, (catchClause+ | (catchClause*, finally)))>
+<!ELEMENT catchClause (formalParameter, block)>
+<!ELEMENT finally (block)>
+<!ELEMENT enhancedForStatement (itVariable, itCollection, statement)>
+<!ATTLIST enhancedForStatement 
+	  id ID #REQUIRED>
+<!ELEMENT itVariable (tp, variableDeclarator)>
+<!ELEMENT itCollection (expression)>
+<!ELEMENT operationChainStatement (primary, operation*)>
+<!ELEMENT operation (methodInvocation)>
+
+<!----------Expressions---------->
+
+<!ELEMENT constantExpression (expression)>
+<!ELEMENT expression (assignmentExpression)>
+<!ELEMENT assignmentExpression (conditionalExpression | assignment)>
+<!ELEMENT assignment (leftHandSide, assignmentOperator, assignmentExpression)>
+<!ELEMENT leftHandSide (expressionName | fieldAccess | arrayAccess)>
+<!ELEMENT assignmentOperator (equal | mutipleEqual | slashEqual | percentEqual | plusEqual | minusEqual | llEqual | rrEqual | rrrEqual | andEqual | cupEqual | orEqual)> <!-- = | *= | /= | %= | += | -= | <<= | >>= | >>>= | &= | ^= | |= -->
+<!ELEMENT equal EMPTY>
+<!ELEMENT mutipleEqual EMPTY>
+<!ELEMENT slashEqual EMPTY>
+<!ELEMENT percentEqual EMPTY>
+<!ELEMENT plusEqual EMPTY>
+<!ELEMENT minusEqual EMPTY>
+<!ELEMENT llEqual EMPTY>
+<!ELEMENT rrEqual EMPTY>
+<!ELEMENT rrrEqual EMPTY>
+<!ELEMENT andEqual EMPTY>
+<!ELEMENT cupEqual EMPTY>
+<!ELEMENT orEqual EMPTY>
+<!ELEMENT conditionalExpression (conditionalOrExpression, (expression, conditionalExpression)?)> <!-- conditionalOrExpression ? expression : conditionalExpression -->
+<!ELEMENT conditionalOrExpression (conditionalAndExpression+)> <!-- conditionalAndExpression || conditionalAndExpression || ... -->
+<!ELEMENT conditionalAndExpression (inclusiveOrExpression+)> <!-- inclusiveOrExpression && inclusiveOrExpression && ... -->
+<!ELEMENT inclusiveOrExpression (exclusiveOrExpression+)> <!-- exclusiveOrExpression | exclusiveExpression | ... -->
+<!ELEMENT exclusiveOrExpression (andExpression+)> <!-- andExpression ^ andExpression ^ ... -->
+<!ELEMENT andExpression (equalityExpression+)> <!-- equalityExpression & equalityExpression & ...-->
+<!ELEMENT equalityExpression ((equalityExpression, equalOperator)?, relationalExpression)> <!-- relationalExpression | equlityExpression ==(!=) relationalExpression -->
+<!ELEMENT equalOperator (#PCDATA)> <!-- != | == -->
+<!ELEMENT relationalExpression 
+	  ( shiftExpression 
+	  | relationalExpression1
+	  | relationalExpression2
+	  )> <!-- e.g. relationalExpression > shiftExpression --> <!-- relationalExpression instanceof referenceType --> 
+<!ELEMENT relationalExpression1 (relationalExpression, relationOperator, shiftExpression)>
+<!ELEMENT relationalExpression2 (relationalExpression, referenceType)>  
+<!ELEMENT relationOperator (#PCDATA)> <!-- < | > | >= | <= -->
+<!ELEMENT shiftExpression 
+	  ( additiveExpression 
+	  | shiftExpression1
+	  )>
+<!ELEMENT shiftExpression1 (shiftExpression, shiftOperator, additiveExpression)>
+<!ELEMENT shiftOperator (#PCDATA)> <!-- << | >> | >>> -->
+<!ELEMENT additiveExpression 
+	  ( multiplicativeExpression 
+	  | additiveExpression1
+	  )>
+<!ELEMENT additiveExpression1 (additiveExpression, additiveOperator, multiplicativeExpression)>
+<!ELEMENT additiveOperator (#PCDATA)> <!-- + | - -->
+<!ELEMENT multiplicativeExpression 
+	  ( unaryExpression 
+	  | multiplicativeExpression1
+	  )>
+<!ELEMENT multiplicativeExpression1 (multiplicativeExpression, multiOperator, unaryExpression)>
+<!ELEMENT multiOperator (#PCDATA) ><!-- * | / | % -->
+<!ELEMENT castExpression 
+	  ( (primitiveType, unaryExpression) 
+	  | (referenceType, unaryExpressionNotPlusMinus)
+	  )>
+<!ELEMENT unaryExpression (preincrementExpression | predecrementExpression | (additiveOperator, unaryExpression) | unaryExpressionNotPlusMinus)>
+<!ELEMENT predecrementExpression (unaryExpression)>
+<!ELEMENT preincrementExpression (unaryExpression)>
+<!ELEMENT unaryExpressionNotPlusMinus (postfixExpression | (unaryOperator, unaryExpression) | castExpression)>
+<!ELEMENT unaryOperator (#PCDATA)> <!-- ~ | ! -->
+<!ELEMENT postdecrementExpression (postfixExpression)> 
+<!ELEMENT postincrementExpression (postfixExpression)> 
+<!ELEMENT postfixExpression 
+	  ( primary 
+	  | expressionName 
+	  | postincrementExpression 
+	  | postdecrementExpression
+	  )>
+<!ELEMENT methodInvocation 
+	  ( methodInvocation1 
+	  | methodInvocation2
+	  )>
+<!ELEMENT methodInvocation1 (methodName, argument*)>
+<!ELEMENT methodInvocation2 (primary, identifier, argument*)>
+<!ELEMENT fieldAccess (primary, identifier)>
+<!ELEMENT primary (primaryNoNewArray | ArrayCreationExpression)>
+<!ELEMENT primaryNoNewArray 
+	  ( literal 
+	  | this 
+	  | super 
+	  | parExpression 
+	  | classInstanceCreationExpression
+	  | interfaceInstanceCreationExpression
+	  | fieldAccess 
+	  | methodInvocation 
+	  | arrayAccess
+	  | identifier
+	  | lambdaExpression
+	  | memberReference
+	  )><!-- this --><!-- added by myself --><!-- parathized --> 
+<!ELEMENT this EMPTY>
+<!ELEMENT super EMPTY>
+<!ELEMENT parExpression (expression)>
+<!ELEMENT classInstanceCreationExpression (classType, argument*)>
+<!ELEMENT interfaceInstanceCreationExpression (interfaceType, argument*, classBody)><!-- Add by myself -->
+<!ELEMENT argument (expression)>
+<!ELEMENT arrayCreationExpression ((primitiveType | classType | InterfaceType), dimExpr+, dims)>
+<!ELEMENT dimExpr (expression)> <!-- [expression] -->
+<!ELEMENT dims (#PCDATA)> <!--  [ ] | <dims> [ ]. It keeps the number of []. -->
+<!ELEMENT arrayAccess 
+	  ( (expressionName, dimExpr)
+	  | (primaryNoNewArray, dimExpr)
+	  )>
+<!ELEMENT lambdaExpression (parameterPart, lambdaBody)>
+<!ELEMENT parameterPart (lambdaParameter*)>
+<!ELEMENT lambdaParameter (tp?, variableDeclaratorId)>
+<!ELEMENT lambdaBody (expression | block)>
+<!ELEMENT memberReference  (identifier)> <!-- If there is no identifier, it means that there is a key word "new" here. expression::new -->
+
+<!----------Tokens---------->
+<!ELEMENT name (simpleName | qualifiedName)>
+<!ELEMENT qualifiedName (name, simpleName)>
+<!ELEMENT simpleName (identifier)>
+<!ELEMENT modifier (#PCDATA)>
+
+<!ELEMENT typeName (packageName?, identifier, typeArgument*)>
+<!ELEMENT simpleTypeName (identifier, typeArgument*)>
+<!ELEMENT typeArgument (referenceType)>
+<!ATTLIST typeArgument kind CDATA #REQUIRED>
+<!ELEMENT expressionName (ambiguousName?, identifier)>
+<!ELEMENT methodName (ambiguousName?, identifier)>
+<!ELEMENT ambiguousName (ambiguousName?, identifier)>
+<!ELEMENT literal (#PCDATA)>
+<!ELEMENT identifier (#PCDATA)>
+]>
