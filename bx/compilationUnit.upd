@@ -7,11 +7,10 @@ $view = doc("example1InJava8.xml")
 START = updateCompilationUnit($source/compilationUnit, $view/compilationUnit)
 
 PROCEDURE updateCompilationUnit(source $src AS s:compilationUnit, view $view AS v:compilationUnit) =
-UPDATE compilationUnit
-       [$sPackageDeclaration AS s:packageDeclaration?, $sImportDeclarations AS s:importDeclaration*, $sTypeDeclarations AS s:typeDeclaration*] IN $src BY
-	updatePackageDeclarationQ($sPackageDeclaration, $vPackageDeclaration);
-	updateImportDeclarations($sImportDeclarations, $vImportDeclarations);
-	updateTypeDeclarations($sTypeDeclarations, $vTypeDeclarations)
+UPDATE compilationUnit[$sPackageDeclaration AS s:packageDeclaration?, $sImportDeclarations AS s:importDeclaration*, $sTypeDeclarations AS s:typeDeclaration*] IN $src BY 
+       updatePackageDeclarationQ($sPackageDeclaration, $vPackageDeclaration);
+       updateImportDeclarations($sImportDeclarations, $vImportDeclarations);
+       updateTypeDeclarations($sTypeDeclarations, $vTypeDeclarations)
 FOR VIEW compilationUnit[$vPackageDeclaration AS v:packageDeclaration?, $vImportDeclarations AS v:importDeclaration*, $vTypeDeclarations AS v:typeDeclaration*] IN $view
 
 (:Declaration:)
@@ -21,133 +20,120 @@ UPDATE $sPackageDeclaration IN $src BY
 	MATCH -> REPLACE . WITH $vPackageDeclaration
 	| UNMATCHV -> CREATE VALUE <packageDeclaration>
 				    <name>
-				     <simpleName/>
+				     <simpleName>
+				      <identifier/>
+				     </simpleName>
 				    </name>
 				   </packageDeclaration>
 FOR VIEW $vPackageDeclaration IN $view
 
 PROCEDURE updateImportDeclarations(source $src AS s:importDeclaration*, view $view AS v:importDeclaration*) =
 UPDATE $sImportDeclaration IN $src BY
-	MATCH -> REPLACE $sImportDeclaration WITH $vImportDeclaration 
-	| UNMATCHV -> CREATE VALUE <importDeclaration>
+	MATCH -> REPLACE . WITH $vImportDeclaration 
+	| UNMATCHV -> CREATE VALUE <importDeclaration static="false" onDemand="false">
 	  	      	     	    <name>
-				     <simpleName/>
+				     <simpleName>
+				      <identifier/>
+				     </simpleName>
 				    </name>
-	  	      	     	   </importDeclaration> 
-CASE $vImportDeclaration OF
-	{
-		v:typeImportOnDemandDeclaration 
-		-> CREATE VALUE <importDeclaration>
-				 <typeImportOnDemandDeclaration>
-				  <packageName>
-				   <identifier/>
-				  </packageName>
-			       	 </typeImportOnDemandDeclaration>
-				</importDeclaration>
-		| v:singleTypeImportDeclaration 
-		-> CREATE VALUE <importDeclaration>
-		   	  	 <singleTypeImportDeclaration>
-			  	  <typeName>
-				   <packageName>
-				    <idnetifier/>
-				   </packageName>
-				   <identifier/>
-				  </typeName>
-			       	 </singleTypeImportDeclaration>
-				</importDeclaration>
-	}
+	  	      	     	   </importDeclaration>
 FOR VIEW $vImportDeclaration IN $view
 
 PROCEDURE updateTypeDeclarations(source $src AS s:typeDeclaration*, view $view AS v:typeDeclaration*) =
-UPDATE $sDeclaration IN $src/* BY
+UPDATE $sDeclaration IN $src BY
 	MATCH -> updateTypeDeclaration($sDeclaration, $vDeclaration)
-	| UNMATCHV -> CASE $vDeclaration OF
-	{
-		 v:classDeclaration
-		-> CREATE VALUE <typeDeclaration>
-		   	  	 <classDeclaration atype = "classDeclaration">
-				  <identifier/>
-				  <classBodey/>					
-				 </classDeclaration>
-				</typeDeclaration>
-		| v:interfaceDeclaration
-		-> CREATE VALUE <typeDeclaration>
-		   	  	 <interfaceDeclaration atype="interfaceDeclaration">
-				  <identifier/>
-				  <interfaceBody/>					
-			       	 </interfaceDeclaration>
-				</typeDeclaration>	
-	}	
-FOR VIEW $vDeclaration IN $view/*
-MATCHING SOURCE BY $sDeclaration/identifier VIEW BY $vDeclaration/identifier 
+	| UNMATCHV -> CREATE VALUE <typeDeclaration interface="true">
+	  	      	     	    <simpleName>
+				     <identifier/>
+				    </simpleName>
+	  	      	     	   </typeDeclaration> 
+FOR VIEW $vDeclaration IN $view
+MATCHING SOURCE BY $sDeclaration/simpleName/identifier VIEW BY $vDeclaration/simpleName/identifier 
 (:Here matching by the name of class or interface:)
 
-PROCEDURE updateTypeDeclaration(source $src AS (s:classDeclaration | s:interfaceDeclaration), view $view AS (v:classDeclaration | v:interfaceDeclaration)) =
-CASE $view OF
-{
-	$vClassDeclaration AS v:classDeclaration
-	-> CASE $src OF
-	{
-		$sClassDeclaration AS s:classDeclaration
-		-> updateClassDeclaration($sClassDeclaration, $vClassDeclaration)
-	}
-	| $vInterfaceDeclaration AS v:interfaceDeclaration
-	-> CASE $src OF
-	{
-		$sInterfaceDeclaration AS s:classDeclaration
-		-> REPLACE $sInterfaceDeclaration With $vInterfaceDeclaration
-	}
-}
-UPDATE typeDeclaration[$sDeclaration AS (s:classDeclaration | s:interfaceDeclaration)] IN $src BY
-	MATCH -> CASE $vDeclaration OF 
-	{
-		$vClassDeclaration AS v:classDeclaration 
-		-> CASE $sDeclaration OF
+PROCEDURE updateTypeDeclaration(source $src AS s:typeDeclaration, view $view AS v:typeDeclaration) =
+UPDATE typeDeclaration[@interface[$sInterface AS String], $sModifiers AS s:modifier*, $sSimpleName AS s:simpleName, $sTypeParameters AS s:typeParameter*, $sSuperClassTypeQ AS s:superClassType?, $sImplementInterfaceTypes AS s:implementInterfaceType*, $sBodyDeclarations AS s:bodyDeclaration*] IN $src BY
+       REPLACE $sInterface WITH $vInterface;
+       updateModifiers($sModifiers, $vModifiers);
+       REPLACE $sSimpleName WITH $vSimpleName;
+       updateTypeParameters($sTypeParameters, $vTypeParameters);
+       updateSuperClassTypeQ($sSuperClassTypeQ, $vSuperClassTypeQ);
+       updateImplementInterfaceType($sImplementInterfaceTypes, $vImplementInterfaceTypes);
+       updateBodyDecalrations($sBodyDeclarations, $vBodyDeclarations)
+FOR VIEW typeDeclaration[@interface[$vInterface AS String], $vModifiers AS v:modifier*, $vSimpleName AS v:simpleName, $vTypeParameters AS v:typeParameter*, $vSuperClassTypeQ AS v:superClassType?, $vImplementInterfaceTypes AS v:implementInterfaceType*, $vBodyDeclarations AS v:bodyDeclaration*] IN $view
+
+PROCEDURE updateModifiers(source $src AS s:modifier*, view $view AS v:modifier*) =
+UPDATE $s IN $src BY
+       MATCH -> REPLACE . WITH $v
+       UNMATCHV -> CREATE VALUE <modifier></modifier>
+FOR VIEW $v IN $view
+
+PROCEDURE updateTypeParameters(source $src AS s:typeParameter*, view $view AS v:typeParameter*) =
+UPDATE $s IN $src BY
+       MATCH -> REPLACE . WITH $v
+       UNMATCHV -> CREATE VALUE <typeParameter>
+				 <simpleName>
+				  <identifier/>
+				 </simpleName>
+       		   	  	</typeParameter>
+FOR VIEW $v IN $view
+
+PROCEDURE updateSuperClassTypeQ(source $src AS s:superClassTypeQ, view $view AS v:superClassTypeQ) =
+UPDATE $s IN $src BY
+       MATCH -> REPLACE . WITH $v
+       UNMATCHV -> CREATE VALUE <superClassType>
+       		   	  	 <tp>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+				 </tp>
+       		   	  	</superClassType>
+FOR VIEW $v IN $view
+
+PROCEDURE updateImplementInterfaceTypes(source $src AS s:ImplementInterfaceType*, view $view AS v:ImplementInterfaceType*) =
+UPDATE $s IN $src BY
+       MATCH -> REPLACE . WITH $v
+       UNMATCHV -> CREATE VALUE <implementInterfaceType>
+				 <tp>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++;
+				 </tp>
+				</implementInterfaceType>
+FOR VIEW $v IN $view
+
+PROCEDURE updateBodyDeclarations(source $src AS s:bodyDeclaration*, view $view AS v:bodyDeclaration*) =
+UPDATE $sDeclaration IN $src BY
+       MATCH -> IF $vDeclaration/@kind/string()="fieldDeclaration"
+       	     	THEN REPLACE . WITH $vDeclaration
+		ELSE CASE $vDeclaraiont OF
 		{
-			$sClassDeclaration AS s:classDeclaration 
-			-> updateClassDeclaration($sClassDeclaration, $vClassDeclaration)
+			bodyDeclaration[@id[$vId AS String], @kind[$vKind AS String], $vTypeDeclaration AS v:typeDeclaration]
+			-> CASE $sDeclaration OF
+			{
+				bodyDeclaration[@id[$sId AS String], @kind[$sKind AS String], $sTypeDeclaration AS s:typeDeclaration]
+				-> REPLACE $sId WITH $vId;
+				   REPLACE $sKind WITH $vKind;
+				   updateTypeDeclaration($sTypeDeclaration, $vTypeDeclaration) 
+			}
+			bodyDeclaration[@id[$vId AS String], @kind[$vKind AS String], $vMethodDeclaration AS v:methodDeclaration]
+			-> CASE $sDeclaration OF
+			{
+				bodyDeclaration[@id[$sId AS String], @kind[$sKind AS String], $sMethodDeclaration AS s:methodDeclaration]
+				-> REPLACE $sId WITH $vId;
+				   REPLACE $sKind WITH $vKind;
+				   updateMethodDeclaration($sMethodDeclaration, $vMethodDeclaration) 
+			}
+			bodyDeclaration[@id[$vId AS String], @kind[$vKind AS String], $vInitializer AS v:initializer]
+			-> CASE $sDeclaration OF
+			{
+				bodyDeclaration[@id[$sId AS String], @kind[$sKind AS String], $sInitializer AS s:initializer]
+				-> REPLACE $sId WITH $vId;
+				   REPLACE $sKind WITH $vKind;
+				   updateInitializer($sInitializer, $vInitializer)
+			}
 		}
-		| $vInterfaceDeclaration AS v:interfaceDeclaration
-		-> CASE $sDeclaration OF
-		{		
-			$sInterfaceDeclaration AS s:interfaceDeclaration
-			-> updateInterfaceDeclaration($sInterfaceDeclaration, $vInterfaceDeclaration)
-		}
-	}
-	| UNMATCHV -> CASE $vDeclaration OF
-	{
-		$vClassDeclaration AS v:classDeclaration
-		-> CREATE VALUE <typeDeclaration>
-		   	  	 <classDeclaration>
-				  <identifier/>
-				  <classBody/>
-				 </classDeclaration>
-		   	  	</typeDeclaration>
-		| $vInterfaceDeclaration AS v:interfaceDeclaration
-		-> CREATE VALUE <typeDeclaration>
-		   	  	 <interfaceDeclaration>
-				  <identifier/>
-				  <interfaceBody/>
-				 </interfaceDeclaration>
-				</typeDeclaration>
-	}
-FOR VIEW typeDeclaration[$vDeclaration AS (v:classDeclaration | v:interfaceDeclaration)] IN $view
-MATCHING SOURCE BY $sDeclaration/@atype/string() VIEW BY $vDeclaration/@atype/string() 
+	UNMATCHV -> 		
+FOR VIEW $Declaration IN $view
+MATCHING SOURECE BY $sDeclaration/@id/string() VIEW BY $vDeclaration/@id/string() 
 
-PROCEDURE updateClassDeclaration(source $src AS s:classDeclaration, view $view AS v:classDeclaration) =
-UPDATE classDeclaration[$sClassModifiers AS s:classModifier*, $sIdentifier AS s:identifier, $sSuper AS s:super?, $sInterfaceTypes AS s:interfaceType*, $sClassBody AS s:classBoody] IN $src BY
-	updateClassModifiers($sClassModifiers, $vClassModifiers);
-	REPLACE $sIdentifier WITH $vIdentifier;
-	updateSuperQ($sSuper, $vSuper);
-	updateInterfaceTypes($sInterfaceTypes, $vInterfaceTypes);
-	updateClassBody($sClassBody, $vClassBody)
-FOR VIEW classDeclaration[$vClassModifiers AS v:classModifier*, $vIdentifier AS v:identifier, $vSuper AS v:super?, $vInterfaceTypes AS v:interfaceType*, $vClassBody AS v:classBoody] IN $view
 
-PROCEDURE updateClassModifiers(source $src AS s:classModifier*, view $view AS v:classModifier*) =
-UPDATE $sModifier IN $src BY
-	UNMATCHV -> CREATE VALUE <classModifier/>
-FOR VIEW $vModifier IN $view
-MATCHING SOURCE BY $sModifier/text() VIEW BY $vModifier/text()
 
 PROCEDURE updateSuperQ(source $src AS s:super?, view $view AS v:super?) =
 UPDATE $sSuper IN $src BY
@@ -229,34 +215,7 @@ MATCHING SOURCE BY $sClassBodyDeclaration/@id/string() VIEW BY $vClassBodyDeclar
 PROCEDURE updateClassBodyDeclaration(source $src AS s:classBodyDeclaration, view $view AS v:classBodyDeclaration) =
 UPDATE classBodyDeclaration[@id[$sId AS String], $sDeclaration AS (s:fieldDeclaration | s:methodDeclaration | s:staticInitializer | s:constructorDeclaration | s:classDeclaration)] IN $src BY
 	REPLACE $sId WITH $vId;
-	CASE $vDeclaration OF
-	{
-		$vFieldDeclaration AS v:fieldDeclaration -> CASE $sDeclaration OF 
-		{
-			$sFieldDeclaration AS s:fieldDeclaration
-			-> updateFieldDeclaration($sFieldDeclaration, $vFieldDeclaration)
-		}
-		| $vMethodDeclaration AS v:methodDeclaration -> CASE $sDeclaration OF
-		{
-			$sMethodDeclaration AS s:methodDeclaration
-			-> updateMethodDeclaration($sMethodDeclaration, $vMethodDeclaration)
-		}
-		| $vStaticInitializer AS v:staticIntialier -> CASE $sDeclaration OF
-		{
-			$sStaticInitializer AS s:staticIntialier
-			-> updateStaticInitializer($sStaticInitializer, $vStaticInitializer)
-		}
-		| $vConstructorDeclaration AS v:constructorDeclaration -> CASE $sDeclaration OF
-		{
-			$sConstructorDeclaration AS s:constructorDeclaration
-			-> updateConstructorDeclaration($sConstructorDeclaration, $vConstructorDeclaration)
-		}
-		| $vClassDeclaration AS v:classDeclaration -> CASE $sDeclaration OF
-		{
-			$sClassDeclaration AS s:classDeclaration
-			-> updateClassDeclaration($sClassDeclaration, $vClassDeclaration)
-		}
-	}
+	
 FOR VIEW classBodyDeclaration[@id[$vId AS String], $vDeclaration AS (v:fieldDeclaration | v:methodDeclaration | v:staticInitializer | v:constructorDeclaration)] IN $view
 
 PROCEDURE updateStaticInitializer(source $src AS s:staticInitializer, view $view AS v:staticInitializer) =
