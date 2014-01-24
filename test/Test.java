@@ -1,5 +1,8 @@
 package abc;
 
+import a.b.c;
+import x.y.*;
+
 public class Test extends ASTBuilder {
 	public void distinctPrimarySum(String[] numbers) {
 		List<String> l = Arrays.asList(numbers);
