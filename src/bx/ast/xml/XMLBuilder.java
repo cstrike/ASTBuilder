@@ -13,7 +13,6 @@ import org.eclipse.jdt.core.dom.*;
 public class XMLBuilder extends ASTVisitor {
 	public Document document;
 	public Map<ASTNode, Element> elements;
-	HashMap<Integer, String> modifierMap;
 
 	public XMLBuilder(){
 		super();
@@ -80,30 +79,50 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(TypeDeclaration node) {
 		Element typeDeclaration = elements.get(node);
-		Element clazz;
-		if(node.isInterface()){
-			clazz = typeDeclaration.addElement("InterfaceDeclaration");
-		}else{
-			clazz = typeDeclaration.addElement("ClassDeclaration");
-		}
-
 		//get modifiers
-		List<Modifier> typeDeclarationList = (List<Modifier>) node.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
-		Iterator<Modifier> itMod = typeDeclarationList.iterator();
-		while(itMod.hasNext()){
-			Modifier modifier = itMod.next();
-			Element modifierElement = clazz.addElement(modifier.getClass().getSimpleName());
-			elements.put(modifier, modifierElement);
+		List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
+		if(modifierList != null){
+			Iterator<Modifier> itMod = modifierList.iterator();
+			while(itMod.hasNext()){
+				Modifier modifier = itMod.next();
+				Element modifierElement = typeDeclaration.addElement(modifier.getClass().getSimpleName());
+				elements.put(modifier, modifierElement);
+			}
 		}
 
-		//get class name
-		Element identifier = clazz.addElement("identifier");
-		identifier.setText(node.getName().toString());
+		//get simpleName
+		SimpleName sname = (SimpleName)node.getStructuralProperty(TypeDeclaration.NAME_PROPERTY);
+		Element snameElement = typeDeclaration.addElement(sname.getClass().getSimpleName());
+		elements.put(sname, snameElement);
+
+		//get type parameters
+		List<TypeParameter> typeParameterList = (List<TypeParameter>)node.getStructuralProperty(TypeDeclaration.TYPE_PARAMETERS_PROPERTY);
+		Iterator<TypeParameter> itTPM = typeParameterList.iterator();
+		while(itTPM.hasNext()){
+			TypeParameter tpm = itTPM.next();
+			Element tpmElement = typeDeclaration.addElement(tpm.getClass().getSimpleName());
+			elements.put(tpm, tpmElement);
+		}
 
 		//get super class
-		if(node.getSuperclassType() != null){
-			Element typeName = clazz.addElement("super").addElement("classType").addElement("typeName");
-			typeName.addElement("identifier").setText(node.getSuperclassType().toString());
+		Type type = (Type)node.getStructuralProperty(TypeDeclaration.SUPERCLASS_TYPE_PROPERTY);
+		if(type != null){
+			System.out.println(type.getClass().getSimpleName());
+			Element typeElement = typeDeclaration.addElement("ExtendsType").addElement("Type");
+			elements.put(type, typeElement);
+			tpVisit(type, typeElement);
+		}
+
+		//get implement interfaces
+		List<Type> typeList = (List<Type>)node.getStructuralProperty(TypeDeclaration.SUPER_INTERFACE_TYPES_PROPERTY);
+		if(typeList != null){
+			Iterator<Type> itTP = typeList.iterator();
+			while(itTP.hasNext()){
+				Type tp = itTP.next();
+				Element tpElement =  typeDeclaration.addElement("implementsType").addElement("Type");
+				elements.put(tp,tpElement);
+				tpVisit(tp, tpElement);
+			}
 		}
 
 		//get body
@@ -111,12 +130,13 @@ public class XMLBuilder extends ASTVisitor {
 		Iterator<BodyDeclaration> itBody = bodyDeclarationList.iterator();
 		while(itBody.hasNext()){
 			BodyDeclaration body = itBody.next();
-			Element bodyElement = clazz.addElement(body.getClass().getSimpleName());
+			Element bodyElement = typeDeclaration.addElement(body.getClass().getSimpleName());
 			elements.put(body, bodyElement);
 		}
 		return super.visit(node);
 	}
 
+	//Modifier Visit Blocks
 	@Override
 	public boolean visit(Modifier node) {
 		Element modifier= elements.get(node);
@@ -126,6 +146,7 @@ public class XMLBuilder extends ASTVisitor {
 		return super.visit(node);
 	}
 
+	//Name Visit Blocks
 	public void nameVisit(Name name,Element nameElement){
 		//Name Element
 		if(name.isQualifiedName()){
@@ -145,7 +166,7 @@ public class XMLBuilder extends ASTVisitor {
 		if(qnameElement != null){
 			//get the Name part
 			Name name = (Name)node.getStructuralProperty(QualifiedName.QUALIFIER_PROPERTY);
-			Element nameElement = qnameElement.addElement(name.getClass().getSimpleName());
+			Element nameElement = qnameElement.addElement("Name");
 			elements.put(name, nameElement);
 			nameVisit(name,nameElement);
 
@@ -171,5 +192,93 @@ public class XMLBuilder extends ASTVisitor {
 		//Identifier element
 		element.addElement("Identifier").setText(text);
 	}
+
+	@Override
+	public boolean visit(TypeParameter node) {
+		Element tpmElement = elements.get(node);
+		if(tpmElement != null){
+			//get SimpleName
+			SimpleName sname= (SimpleName)node.getStructuralProperty(TypeParameter.NAME_PROPERTY);
+			Element snameElement = tpmElement.addElement(sname.getClass().getSimpleName());
+			elements.put(sname, snameElement);
+			//get Type Bounds list
+			List<Type> typeList = (List<Type>)node.getStructuralProperty(TypeParameter.TYPE_BOUNDS_PROPERTY);
+			if(typeList != null){
+				Iterator<Type> itTP = typeList.iterator();
+				while(itTP.hasNext()){
+					Type tp = itTP.next();
+					Element tpElement =  tpmElement.addElement("TypeBound").addElement("Type");
+					elements.put(tp,tpElement);
+					tpVisit(tp, tpElement);
+				}
+			}
+		}
+		return super.visit(node);
+	}
+
+	//Type Visit Blocks
+	public void tpVisit(Type type,Element typeElement){
+		Type tp = null;
+		if(type.isPrimitiveType()){
+			tp = (PrimitiveType)type;
+		}else if(type.isArrayType()){
+			tp = (ArrayType)type;
+		}else if(type.isSimpleType()){
+			tp = (SimpleType)type;
+		}else if(type.isQualifiedType()){
+			tp = (QualifiedType)type;
+		}else if(type.isParameterizedType()){
+			tp = (ParameterizedType)type;
+		}else if(type.isWildcardType()){
+			tp = (WildcardType)type;
+		}
+		if(tp !=null){
+			Element tpElement = typeElement.addElement(tp.getClass().getSimpleName());
+			elements.put(tp, tpElement);
+		}
+	}
+
+	@Override
+	public boolean visit(ArrayType node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ParameterizedType node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(PrimitiveType node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(QualifiedType node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(SimpleType node) {
+		Element stpElement = elements.get(node);
+		if(stpElement != null){
+			Name name = (Name)node.getStructuralProperty(SimpleType.NAME_PROPERTY);
+			Element nameElement = stpElement.addElement("Name");
+			elements.put(name, nameElement);
+			nameVisit(name,nameElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(WildcardType node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
 
 }

@@ -1,6 +1,6 @@
 package abc;
 
-public class Test {
+public class Test extends ASTBuilder {
 	public void distinctPrimarySum(String[] numbers) {
 		List<String> l = Arrays.asList(numbers);
 		int sum = 0;
