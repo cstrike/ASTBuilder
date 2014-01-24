@@ -57,7 +57,10 @@ public class XMLBuilder extends ASTVisitor {
 	public boolean visit(PackageDeclaration node) {
 		Element packageDeclarationElement = elements.get(node);
 		if(packageDeclarationElement != null){
-			packageDeclarationElement.addElement("PackageName").addElement("Identifier").setText(node.getName().toString());
+			Name name=(Name)node.getStructuralProperty(PackageDeclaration.NAME_PROPERTY);
+			Element nameElement = packageDeclarationElement.addElement("Name");
+			elements.put(name,nameElement);
+			nameVisit(name,nameElement);
 		}
 		return super.visit(node);
 	}
@@ -66,7 +69,10 @@ public class XMLBuilder extends ASTVisitor {
 	public boolean visit(ImportDeclaration node) {
 		Element importDeclarationElement = elements.get(node);
 		if(importDeclarationElement != null){
-			importDeclarationElement.addElement("Identifier").setText(node.getName().toString());
+			Name name=(Name)node.getStructuralProperty(PackageDeclaration.NAME_PROPERTY);
+			Element nameElement = importDeclarationElement.addElement("Name");
+			elements.put(name,nameElement);
+			nameVisit(name,nameElement);
 		}
 		return super.visit(node);
 	}
@@ -118,6 +124,52 @@ public class XMLBuilder extends ASTVisitor {
 			modifier.setText(node.getKeyword().toString());
 		}
 		return super.visit(node);
+	}
+
+	public void nameVisit(Name name,Element nameElement){
+		//Name Element
+		if(name.isQualifiedName()){
+			QualifiedName qname = (QualifiedName)name;
+			Element qnameElement = nameElement.addElement(qname.getClass().getSimpleName());
+			elements.put(qname, qnameElement);
+		}else{
+			SimpleName sname = (SimpleName)name;
+			Element snameElement = nameElement.addElement(sname.getClass().getSimpleName());
+			elements.put(sname, snameElement);
+		}
+	}
+
+	@Override
+	public boolean visit(QualifiedName node) {
+		Element qnameElement = elements.get(node);
+		if(qnameElement != null){
+			//get the Name part
+			Name name = (Name)node.getStructuralProperty(QualifiedName.QUALIFIER_PROPERTY);
+			Element nameElement = qnameElement.addElement(name.getClass().getSimpleName());
+			elements.put(name, nameElement);
+			nameVisit(name,nameElement);
+
+			//get the SimpleName part
+			SimpleName sname = (SimpleName)node.getStructuralProperty(QualifiedName.NAME_PROPERTY);
+			Element snameElement = qnameElement.addElement(sname.getClass().getSimpleName());
+			elements.put(sname, snameElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(SimpleName node) {
+		Element snameElement = elements.get(node);
+		if(snameElement != null){
+			String text = node.getIdentifier();
+			idVisit(snameElement, text);
+		}
+		return super.visit(node);
+	}
+
+	public void idVisit(Element element,String text){
+		//Identifier element
+		element.addElement("Identifier").setText(text);
 	}
 
 }
