@@ -5,12 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.eclipse.jdt.core.dom.*;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 
 public class XMLBuilder extends ASTVisitor {
+	
 	public Document document;
 	public Map<ASTNode, Element> elements;
 
@@ -20,6 +24,7 @@ public class XMLBuilder extends ASTVisitor {
 		elements = new HashMap<ASTNode, Element>();
 	}
 
+	//Declarations
 	@Override
 	public boolean visit(CompilationUnit node){
 		//Add root to the elements. If the node is not root, it has already been added.
@@ -51,7 +56,6 @@ public class XMLBuilder extends ASTVisitor {
 
 		return super.visit(node);		
 	}
-
 	@Override
 	public boolean visit(PackageDeclaration node) {
 		Element packageDeclarationElement = elements.get(node);
@@ -63,7 +67,6 @@ public class XMLBuilder extends ASTVisitor {
 		}
 		return super.visit(node);
 	}
-
 	@Override
 	public boolean visit(ImportDeclaration node) {
 		Element importDeclarationElement = elements.get(node);
@@ -77,13 +80,13 @@ public class XMLBuilder extends ASTVisitor {
 		}
 		return super.visit(node);
 	}
-
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean visit(TypeDeclaration node) {
 		Element typeDeclaration = elements.get(node);
-		
+
 		typeDeclaration.addAttribute("interface", ""+node.isInterface());
-		
+
 		//get modifiers
 		List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
 		if(modifierList != null){
@@ -108,25 +111,38 @@ public class XMLBuilder extends ASTVisitor {
 			Element tpmElement = typeDeclaration.addElement("typeParameter");
 			elements.put(tpm, tpmElement);
 		}
-		
-		//get super class
-		Type type = (Type)node.getStructuralProperty(TypeDeclaration.SUPERCLASS_TYPE_PROPERTY);
-		if(type != null){
-			System.out.println(type.getClass().getSimpleName());
-			Element typeElement = typeDeclaration.addElement("extendsType").addElement("tp");
-			elements.put(type, typeElement);
-			tpVisit(type, typeElement);
-		}
 
-		//get implement interfaces
-		List<Type> typeList = (List<Type>)node.getStructuralProperty(TypeDeclaration.SUPER_INTERFACE_TYPES_PROPERTY);
-		if(typeList != null){
-			Iterator<Type> itTP = typeList.iterator();
-			while(itTP.hasNext()){
-				Type tp = itTP.next();
-				Element tpElement =  typeDeclaration.addElement("implementsType").addElement("tp");
-				elements.put(tp,tpElement);
-				tpVisit(tp, tpElement);
+		//get super class
+		if(node.isInterface()){
+			//for interface, multiple super classes and no implements
+			List<Type> itypeList = (List<Type>)node.getStructuralProperty(TypeDeclaration.SUPER_INTERFACE_TYPES_PROPERTY);
+			if(itypeList != null){
+				Iterator<Type> itTP = itypeList.iterator();
+				while(itTP.hasNext()){
+					Type tp = itTP.next();
+					Element tpElement =  typeDeclaration.addElement("extendsType").addElement("tp");
+					elements.put(tp,tpElement);
+					tpVisit(tp, tpElement);
+				}
+			}
+		}else{
+			Type type = (Type)node.getStructuralProperty(TypeDeclaration.SUPERCLASS_TYPE_PROPERTY);
+			if(type != null){
+				Element typeElement = typeDeclaration.addElement("extendsType").addElement("tp");
+				elements.put(type, typeElement);
+				tpVisit(type, typeElement);
+			}
+
+			//get implement interfaces
+			List<Type> typeList = (List<Type>)node.getStructuralProperty(TypeDeclaration.SUPER_INTERFACE_TYPES_PROPERTY);
+			if(typeList != null){
+				Iterator<Type> itTP = typeList.iterator();
+				while(itTP.hasNext()){
+					Type tp = itTP.next();
+					Element tpElement =  typeDeclaration.addElement("implementsType").addElement("tp");
+					elements.put(tp,tpElement);
+					tpVisit(tp, tpElement);
+				}
 			}
 		}
 
@@ -136,10 +152,189 @@ public class XMLBuilder extends ASTVisitor {
 		while(itBody.hasNext()){
 			BodyDeclaration body = itBody.next();
 			Element bodyElement = typeDeclaration.addElement("bodyDeclaration");
+			bodyElement.addAttribute("id", "");
 			elements.put(body, bodyElement);
+			bodyVisit(body, bodyElement);
 		}
 		return super.visit(node);
 	}
+	public void bodyVisit(BodyDeclaration body,Element bodyElement){
+		BodyDeclaration bd = null;
+		if(body instanceof MethodDeclaration){
+			bd = (MethodDeclaration)body;
+		}else if(body instanceof Initializer){
+			bd = (Initializer)body;
+		}else if(body instanceof FieldDeclaration){
+			bd = (FieldDeclaration)body;
+		}else if(body instanceof AbstractTypeDeclaration){
+			bd = (AbstractTypeDeclaration)body;
+		}else if(body instanceof AnnotationTypeDeclaration){
+			bd = (AnnotationTypeDeclaration)body;
+		}else if(body instanceof EnumConstantDeclaration){
+			bd = (EnumConstantDeclaration)body;
+		}else if(body instanceof TypeDeclaration){
+			bd = (TypeDeclaration)body;
+		}
+		if(bd !=null){
+			String kind = bd.getClass().getSimpleName().substring(0,1).toLowerCase()+bd.getClass().getSimpleName().substring(1);
+			bodyElement.addAttribute("kind", kind);
+			Element bdElement = bodyElement.addElement(kind);
+			elements.put(bd, bdElement);
+		}
+	}
+
+	@Override
+	public boolean visit(MethodDeclaration node) {
+		Element methodDeclarationElement = elements.get(node);
+		if(methodDeclarationElement != null){
+			methodDeclarationElement.addAttribute("constructor", ""+node.isConstructor());
+			methodDeclarationElement.addAttribute("extraDimensions", ""+node.getExtraDimensions());
+
+			//get modifiers
+			List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(MethodDeclaration.MODIFIERS2_PROPERTY);
+			if(modifierList != null){
+				Iterator<Modifier> itMod = modifierList.iterator();
+				while(itMod.hasNext()){
+					Modifier modifier = itMod.next();
+					Element modifierElement = methodDeclarationElement.addElement("modifier");
+					elements.put(modifier, modifierElement);
+				}
+			}
+
+			//get simpleName
+			SimpleName sname = (SimpleName)node.getStructuralProperty(MethodDeclaration.NAME_PROPERTY);
+			Element snameElement = methodDeclarationElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+
+			//get type parameters
+			List<TypeParameter> typeParameterList = (List<TypeParameter>)node.getStructuralProperty(MethodDeclaration.TYPE_PARAMETERS_PROPERTY);
+			Iterator<TypeParameter> itTPM = typeParameterList.iterator();
+			while(itTPM.hasNext()){
+				TypeParameter tpm = itTPM.next();
+				Element tpmElement = methodDeclarationElement.addElement("typeParameter");
+				elements.put(tpm, tpmElement);
+			}
+
+			//if not constructor, get return type
+			if(!node.isConstructor()){
+				Type returnType = (Type)node.getStructuralProperty(MethodDeclaration.RETURN_TYPE2_PROPERTY);
+				Element rtypeElement = methodDeclarationElement.addElement("returnType").addElement("tp");
+				elements.put(returnType, rtypeElement);
+				tpVisit(returnType, rtypeElement);
+			}
+			
+			//formalParameter
+			List<SingleVariableDeclaration> fpList = (List<SingleVariableDeclaration>)node.getStructuralProperty(MethodDeclaration.PARAMETERS_PROPERTY);
+			Iterator<SingleVariableDeclaration> itFP = fpList.iterator();
+			while(itFP.hasNext()){
+				SingleVariableDeclaration fp = itFP.next();
+				Element fpElement = methodDeclarationElement.addElement("formalParameter").addElement("singleVariableDeclaration");
+				elements.put(fp, fpElement);
+			}
+			
+			//thrownException
+			List<Type> exceptionList = (List<Type>)node.getStructuralProperty(MethodDeclaration.THROWN_EXCEPTION_TYPES_PROPERTY);
+			Iterator<Type> itException = exceptionList.iterator();
+			while(itException.hasNext()){
+				Type exception = itException.next();
+				Element exceptionElement = methodDeclarationElement.addElement("thrownException").addElement("tp");
+				elements.put(exception, exceptionElement);
+			}
+			
+			//block
+			Block block = (Block)node.getStructuralProperty(MethodDeclaration.BODY_PROPERTY);
+			Element blockElement = methodDeclarationElement.addElement("block");
+			elements.put(block, blockElement);
+		}
+		return super.visit(node);
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean visit(Initializer node) {
+		Element initElement = elements.get(node);
+		if(initElement != null){
+			//get modifiers
+			List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(Initializer.MODIFIERS2_PROPERTY);
+			if(modifierList != null){
+				Iterator<Modifier> itMod = modifierList.iterator();
+				while(itMod.hasNext()){
+					Modifier modifier = itMod.next();
+					Element modifierElement = initElement.addElement("modifier");
+					elements.put(modifier, modifierElement);
+				}
+			}
+			
+			//block
+			Block block = (Block)node.getStructuralProperty(Initializer.BODY_PROPERTY);
+			Element blockElement = initElement.addElement("block");
+			elements.put(block, blockElement);
+		}
+		return super.visit(node);
+	}
+	@Override
+	public boolean visit(FieldDeclaration node) {
+		Element fieldElement = elements.get(node);
+		if(fieldElement != null){
+			//get modifiers
+			List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(FieldDeclaration.MODIFIERS2_PROPERTY);
+			if(modifierList != null){
+				Iterator<Modifier> itMod = modifierList.iterator();
+				while(itMod.hasNext()){
+					Modifier modifier = itMod.next();
+					Element modifierElement = fieldElement.addElement("modifier");
+					elements.put(modifier, modifierElement);
+				}
+			}
+			
+			//get tp
+			Type tp = (Type)node.getStructuralProperty(FieldDeclaration.TYPE_PROPERTY);
+			Element tpElement = fieldElement.addElement("tp");
+			elements.put(tp, tpElement);
+			
+			//get variableDeclarationFragment
+			List<VariableDeclarationFragment> vdfList = (List<VariableDeclarationFragment>)node.getStructuralProperty(FieldDeclaration.FRAGMENTS_PROPERTY);
+			Iterator<VariableDeclarationFragment> itVDF = vdfList.iterator();
+			while(itVDF.hasNext()){
+				VariableDeclarationFragment vdf = itVDF.next();
+				Element vdfElement = fieldElement.addElement("variableDeclarationFragment");
+				elements.put(vdf,vdfElement);
+			}
+		}
+		return super.visit(node);
+	}
+	@Override
+	public boolean visit(VariableDeclarationFragment node) {
+		Element vdfElement = elements.get(node);
+		if(vdfElement != null){
+			vdfElement.addAttribute("extrDimensions", ""+node.getExtraDimensions());
+			
+			//get simpleName
+			SimpleName sname = (SimpleName)node.getStructuralProperty(VariableDeclarationFragment.NAME_PROPERTY);
+			Element snameElement = vdfElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+			
+			//get Expressions
+			Expression exp = (Expression)node.getStructuralProperty(VariableDeclarationFragment.INITIALIZER_PROPERTY);
+			Element expElement = vdfElement.addElement("expression");
+			elements.put(exp,expElement);
+		}
+		return super.visit(node);
+	}
+	@Override
+	public boolean visit(SingleVariableDeclaration node) {
+		
+		return super.visit(node);
+	}
+	
+	
+	
+	
+	
+	//Tokens
+
+
+
+
 
 	//Modifier Visit Blocks
 	@Override
@@ -221,6 +416,7 @@ public class XMLBuilder extends ASTVisitor {
 		return super.visit(node);
 	}
 
+	//Types
 	//Type Visit Blocks
 	public void tpVisit(Type type,Element typeElement){
 		Type tp = null;
@@ -239,7 +435,7 @@ public class XMLBuilder extends ASTVisitor {
 		}
 		if(tp !=null){
 			Element tpElement = typeElement.addElement(tp.getClass().getSimpleName().substring(0,1).toLowerCase()+tp.getClass().getSimpleName().substring(1)
-);
+					);
 			elements.put(tp, tpElement);
 		}
 	}
@@ -258,7 +454,10 @@ public class XMLBuilder extends ASTVisitor {
 
 	@Override
 	public boolean visit(PrimitiveType node) {
-		// TODO Auto-generated method stub
+		Element ptypeElement = elements.get(node);
+		if(ptypeElement != null){
+			ptypeElement.setText(node.getPrimitiveTypeCode().toString());
+		}
 		return super.visit(node);
 	}
 
@@ -285,6 +484,5 @@ public class XMLBuilder extends ASTVisitor {
 		// TODO Auto-generated method stub
 		return super.visit(node);
 	}
-
 
 }
