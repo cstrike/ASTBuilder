@@ -7,93 +7,116 @@
 <!ELEMENT importDeclaration (name)>
 <!ATTLIST importDeclaration static CDATA #REQUIRED 
                             onDemand CDATA #REQUIRED> <!-- boolean -->
-<!ELEMENT typeDeclaration (modifier*, simpleName, typeParemeter*, superClassType?, implementInterfaceType*, bodyDeclaration*)>
+<!ELEMENT typeDeclaration (modifier*, simpleName, typeParemeter*, extendsType*, implementsType*, bodyDeclaration*)>
 <!ATTLIST typeDeclaration interface CDATA #REQUIRED> <!-- boolean -->
 <!ELEMENT typeParameter (simpleName, typeBound*)><!-- TypeVariable [extends Type {& Type}] -->
 <!ELEMENT typeBound (tp)>
-<!ELEMENT superClassType (tp)>
-<!ELEMENT implementInterfaceType (tp)>
+<!ELEMENT extendsType (tp)>
+<!ELEMENT implementsType (tp)>
 <!ELEMENT bodyDeclaration (typeDeclaration | methodDeclaration | fildDeclaration | initializer)>
 <!ATTLIST bodyDeclaration id CDATA #REQUIRED
                           kind CDATA #REQUIRED> <!-- id is the corresponding marker. kind is the type of the subelement -->
 <!ELEMENT initializer (modifier, block)> <!-- static block -->
 <!ELEMENT fieldDeclaration (modifier*, tp, variableDeclarationFragment+)>
-<!ELEMENT variableDeclarationFragment (simpleName, expression+)>
-<!ATTLIST variableDeclarationFragment extrDimensions CDATA #REQUIRED>
-<!ELEMENT methodDeclaration (modifier*, typeParameter*, returnType?, simpleName, formalParameter*, thrownException*, block)
+<!ELEMENT variableDeclarationFragment (simpleName, expression?)>
+<!ATTLIST variableDeclarationFragment extraDimensions CDATA #REQUIRED>
+<!ELEMENT methodDeclaration (modifier*, typeParameter*, returnType?, simpleName, formalParameter*, thrownException*, block?)
 <!ATTLIST methodDeclaration constructor CDATA #REQUIRED
 	                    extraDimensions CDATA #REQUIRED>
 <!ELEMENT returnType (tp)>
 <!ELEMENT formalParameter (singleVariableDeclaration)>
 <!ELEMENT singleVariableDeclaration (modifier*, tp, simpleName, expression?)>
-<!ATTLIST singleVariableDeclaration extrDimentions>
+<!ATTLIST singleVariableDeclaration extraDimentions>
 <!ELEMENT thrownException (name)> <!-- throws classType,... -->
 
 <!----------Types---------->
 
-<!ELEMENT tp (primitiveType | referenceType)>
+<!ELEMENT tp (primitiveType | arrayType | simpleType | qualifiedType | parameterizedType | wildcardType)>
 <!ELEMENT primitiveType (#PCDATA)> <!-- boolean | byte | short | int | long | char | float | double -->
-<!ELEMENT referenceType (arrayType | classType | interfaceType)>
-<!ELEMENT classType (typeName, simpleTypeName?)>
-<!ELEMENT interfaceType (typeName, simpleTypeName?)>
-<!ELEMENT arrayType (tp)> <!-- arrayType has already represent "[]" -->
+<!ELEMENT arrayType (tp)>
+<!ATTLIST arrayType dimensions CDATA #REQUIRED>
+<!ELEMENT simpleType (name)>
+<!ELEMENT qualifiedType (tp, simpleName)>
+<!ELEMENT parameterizedType (tp, typeArgument+)>
+<!ELEMENT typeArgument (tp)>
+<!ELEMENT wildcardType (tp)>
+<!ATTLIST wildcardType upperBound CDATA #REQUIRED><!-- boolean -->
 
 <!----------Blocks and Commands---------->
 
 <!ELEMENT block (statement*)>
 <!ELEMENT statement 
-	  ( localVariableDeclarationStatement
-	  | labeledStatement 
-	  | ifStatement
-	  | whileStatement 
-	  | forStatement
+	  ( assertStatement
 	  | block
+	  | creakStatement
+	  | constructorInvocation
+	  | continueStatement
+	  | doStatement
 	  | emptyStatement
 	  | expressionStatement
-	  | switchStatement 
-	  | doStatement
-	  | breakStatement 
-	  | continueStatement
-	  | returnStatement 
-	  | synchronizedStatement 
-	  | throwsStatement 
+	  | forStatement
+	  | ifStatement
+	  | labeledStatement
+	  | returnStatement
+	  | superConstructorInvocation
+	  | switchCase
+	  | switchStatement
+	  | synchronizedStatement
+	  | throwStatement
 	  | tryStatement
+	  | typeDeclarationStatement
+	  | variableDeclarationStatement
+	  | WhileStatement
 	  | enhancedForStatement
 	  | operationChainStatement
 	  )>
-<!ATTLIST statement
-	  atype CDATA #REQUIRED
-	  marker ID #REQUIRED
-	  isOperationChain CDATA #REQUIRED
-	  eagerOperationType CDATA #REQUIRED>
+<!ATTLIST statement kind CDATA #REQUIRED
+	            marker CDATA #REQUIRED
+	            operation CDATA #REQUIRED
+	            opType CDATA #REQUIRED
+	            opNeededVariable CDATA #REQUIRED
+	            opChainType CDATA #REQUIRED>
+<!ELEMENT assertStatement (expression, message)>
+<!ELEMENT message (expression)>
+<!ELEMENT breakStatement (simpleName?)>
+<!ELEMENT constructorInvocation (typeArguement*, argument*)>
+<!ELEMENT continueStatement (simpleName?)>
+<!ELEMENT doStatement (statement, expression)>
+<!ELEMENT emptyStatement EMPTY>
+<!ELEMENT expressionStatement (expression)>
+<!ELEMENT forStatement (forInit?, expression?, forUpdate?, forUpdate?, statement)> 
+<!ELEMENT forInit (expression)>
+<!ELEMENT forUpdate (expression)>
+<!ELEMENT ifStatement (expression, thenStatement, elseStatement?)>
+<!ELEMENT thenStatement (statement)>
+<!ELEMENT elseStatement (statement)>
+<!ELEMENT labeledStatement (simpleName, statement)>
+<!ELEMENT returnStatement (expression?)>
+<!ELEMENT superConstructorInvocation (expression*, typeArguement*, arguement*)>
+<!ELEMENT switchCase (expression?)> <!-- case expression: | default: --> 
+<!ELEMENT switchStatement (expression, switchBlock*)>
+<!ELEMENT switchBlock (switchCase | statement)>
+<!ELEMENT sychronizedStatement (expression, block)>
+
+
 <!ELEMENT localVariableDeclarationStatement (localVariableDeclaration)>
 <!ELEMENT localVariableDeclaration (tp, variableDeclarator+)>
-<!ELEMENT emptyStatement EMPTY>
-<!ELEMENT labeledStatement (identifier, statement)>
-<!ELEMENT expressionStatement (statementExpression)> 
-<!ELEMENT statementExpression 
-	  ( assignment
-	  | preincrementExpression 
-	  | postincrementExpression
-	  | predecrementExpression 
-	  | postdecrementExpression 
-	  | methodInvocation
-	  | classInstanceCreationExpression
-	  )>
-<!ELEMENT ifStatement (expression, statement, statement?)>
+
+
+
+
 <!ATTLIST ifStatement isFilter CDATA #REQUIRED>
 <!ELEMENT switchStatement (expression, switchBlock)>
 <!ELEMENT switchBlock (switchBlockStatementGroup*, switchLabel*)>
 <!ELEMENT switchBlockStatementGroup (switchLabel+, statement+)>
 <!ELEMENT switchLabel (constantExpression)> <!-- If constantExpression is empty or null, it means that no case but default. -->  
 <!ELEMENT whileStatement (expression, statement)>
-<!ELEMENT doStatement (statement, expression)>
-<!ELEMENT forStatement (forInit?, expression?, forUpdate?, statement)>
-<!ELEMENT forInit (statementExpression+ | localVariableDeclaration)>
-<!ELEMENT forUpdate (statementExpression+)>
-<!ELEMENT breakStatement (identifier?)>
-<!ELEMENT continueStatement (identifier?)>
-<!ELEMENT returnStatement (expression?)>
+
+
+
+
+
+
 <!ELEMENT throwsStatement (expression)>
 <!ELEMENT synchronizedStatement (expression, block)>
 <!ELEMENT tryStatement (block, (catchClause+ | (catchClause*, finally)))>
