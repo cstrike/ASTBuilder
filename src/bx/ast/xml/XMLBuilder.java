@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 
 public class XMLBuilder extends ASTVisitor {
-	
+
 	public Document document;
 	public Map<ASTNode, Element> elements;
 
@@ -222,7 +222,7 @@ public class XMLBuilder extends ASTVisitor {
 				elements.put(returnType, rtypeElement);
 				tpVisit(returnType, rtypeElement);
 			}
-			
+
 			//formalParameter
 			List<SingleVariableDeclaration> fpList = (List<SingleVariableDeclaration>)node.getStructuralProperty(MethodDeclaration.PARAMETERS_PROPERTY);
 			Iterator<SingleVariableDeclaration> itFP = fpList.iterator();
@@ -231,7 +231,7 @@ public class XMLBuilder extends ASTVisitor {
 				Element fpElement = methodDeclarationElement.addElement("formalParameter").addElement("singleVariableDeclaration");
 				elements.put(fp, fpElement);
 			}
-			
+
 			//thrownException
 			List<Type> exceptionList = (List<Type>)node.getStructuralProperty(MethodDeclaration.THROWN_EXCEPTION_TYPES_PROPERTY);
 			Iterator<Type> itException = exceptionList.iterator();
@@ -240,7 +240,7 @@ public class XMLBuilder extends ASTVisitor {
 				Element exceptionElement = methodDeclarationElement.addElement("thrownException").addElement("tp");
 				elements.put(exception, exceptionElement);
 			}
-			
+
 			//block
 			Block block = (Block)node.getStructuralProperty(MethodDeclaration.BODY_PROPERTY);
 			Element blockElement = methodDeclarationElement.addElement("block");
@@ -263,7 +263,7 @@ public class XMLBuilder extends ASTVisitor {
 					elements.put(modifier, modifierElement);
 				}
 			}
-			
+
 			//block
 			Block block = (Block)node.getStructuralProperty(Initializer.BODY_PROPERTY);
 			Element blockElement = initElement.addElement("block");
@@ -285,12 +285,13 @@ public class XMLBuilder extends ASTVisitor {
 					elements.put(modifier, modifierElement);
 				}
 			}
-			
+
 			//get tp
 			Type tp = (Type)node.getStructuralProperty(FieldDeclaration.TYPE_PROPERTY);
 			Element tpElement = fieldElement.addElement("tp");
 			elements.put(tp, tpElement);
-			
+			tpVisit(tp, tpElement);
+
 			//get variableDeclarationFragment
 			List<VariableDeclarationFragment> vdfList = (List<VariableDeclarationFragment>)node.getStructuralProperty(FieldDeclaration.FRAGMENTS_PROPERTY);
 			Iterator<VariableDeclarationFragment> itVDF = vdfList.iterator();
@@ -307,12 +308,12 @@ public class XMLBuilder extends ASTVisitor {
 		Element vdfElement = elements.get(node);
 		if(vdfElement != null){
 			vdfElement.addAttribute("extrDimensions", ""+node.getExtraDimensions());
-			
+
 			//get simpleName
 			SimpleName sname = (SimpleName)node.getStructuralProperty(VariableDeclarationFragment.NAME_PROPERTY);
 			Element snameElement = vdfElement.addElement("simpleName");
 			elements.put(sname, snameElement);
-			
+
 			//get Expressions
 			Expression exp = (Expression)node.getStructuralProperty(VariableDeclarationFragment.INITIALIZER_PROPERTY);
 			Element expElement = vdfElement.addElement("expression");
@@ -322,14 +323,40 @@ public class XMLBuilder extends ASTVisitor {
 	}
 	@Override
 	public boolean visit(SingleVariableDeclaration node) {
-		
+		Element svdElement = elements.get(node);
+		if(svdElement != null){
+			svdElement.addAttribute("extrDimentions", ""+node.getExtraDimensions());
+
+			//get modifiers
+			List<Modifier> modifierList = (List<Modifier>) node.getStructuralProperty(SingleVariableDeclaration.MODIFIERS2_PROPERTY);
+			if(modifierList != null){
+				Iterator<Modifier> itMod = modifierList.iterator();
+				while(itMod.hasNext()){
+					Modifier modifier = itMod.next();
+					Element modifierElement = svdElement.addElement("modifier");
+					elements.put(modifier, modifierElement);
+				}
+			}
+
+			//get tp
+			Type tp = (Type)node.getStructuralProperty(SingleVariableDeclaration.TYPE_PROPERTY);
+			Element tpElement = svdElement.addElement("tp");
+			elements.put(tp, tpElement);
+			tpVisit(tp, tpElement);
+
+			//get simpleName
+			SimpleName sname = (SimpleName)node.getStructuralProperty(SingleVariableDeclaration.NAME_PROPERTY);
+			Element snameElement = svdElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+
+			//get Expressions
+			Expression exp = (Expression)node.getStructuralProperty(SingleVariableDeclaration.INITIALIZER_PROPERTY);
+			Element expElement = svdElement.addElement("expression");
+			elements.put(exp,expElement);
+		}
 		return super.visit(node);
 	}
-	
-	
-	
-	
-	
+
 	//Tokens
 
 
