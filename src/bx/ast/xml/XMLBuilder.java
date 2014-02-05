@@ -245,6 +245,7 @@ public class XMLBuilder extends ASTVisitor {
 			Block block = (Block)node.getStructuralProperty(MethodDeclaration.BODY_PROPERTY);
 			Element blockElement = methodDeclarationElement.addElement("block");
 			elements.put(block, blockElement);
+			blockVisit(block, blockElement);
 		}
 		return super.visit(node);
 	}
@@ -268,6 +269,7 @@ public class XMLBuilder extends ASTVisitor {
 			Block block = (Block)node.getStructuralProperty(Initializer.BODY_PROPERTY);
 			Element blockElement = initElement.addElement("block");
 			elements.put(block, blockElement);
+			blockVisit(block, blockElement);
 		}
 		return super.visit(node);
 	}
@@ -357,13 +359,389 @@ public class XMLBuilder extends ASTVisitor {
 		return super.visit(node);
 	}
 
+	//Statements
+	public void blockVisit(Block block,Element blockElement){
+		List<Statement> stmtList = block.statements();
+		Iterator<Statement> itStmt = stmtList.iterator();
+		while(itStmt.hasNext()){
+			Statement stmt = itStmt.next();
+			Element stmtElement = blockElement.addElement("statement");
+			elements.put(stmt, stmtElement);
+			stmtVisit(stmt,stmtElement);
+		}
+	}
+
+	public void stmtVisit(Statement stmt,Element stmtElement){
+		Statement myStmt = null;
+		if(stmt instanceof AssertStatement){
+			myStmt = (AssertStatement)stmt;
+		}else if(stmt instanceof Block){
+			myStmt = (Block)stmt;
+		}else if(stmt instanceof BreakStatement){
+			myStmt = (BreakStatement)stmt;
+		}else if(stmt instanceof ConstructorInvocation){
+			myStmt = (ConstructorInvocation)stmt;
+		}else if(stmt instanceof ContinueStatement){
+			myStmt = (ContinueStatement)stmt;
+		}else if(stmt instanceof DoStatement){
+			myStmt = (DoStatement)stmt;
+		}else if(stmt instanceof EmptyStatement){
+			myStmt = (EmptyStatement)stmt;
+		}else if(stmt instanceof ExpressionStatement){
+			myStmt = (ExpressionStatement)stmt;
+		}else if(stmt instanceof ForStatement){
+			myStmt = (ForStatement)stmt;
+		}else if(stmt instanceof IfStatement){
+			myStmt = (IfStatement)stmt;
+		}else if(stmt instanceof LabeledStatement){
+			myStmt = (LabeledStatement)stmt;
+		}else if(stmt instanceof ReturnStatement){
+			myStmt = (ReturnStatement)stmt;
+		}else if(stmt instanceof SuperConstructorInvocation){
+			myStmt = (SuperConstructorInvocation)stmt;
+		}else if(stmt instanceof SwitchCase){
+			myStmt = (SwitchCase)stmt;
+		}else if(stmt instanceof SwitchStatement){
+			myStmt = (SwitchStatement)stmt;
+		}else if(stmt instanceof SynchronizedStatement){
+			myStmt = (SynchronizedStatement)stmt;
+		}else if(stmt instanceof ThrowStatement){
+			myStmt = (ThrowStatement)stmt;
+		}else if(stmt instanceof  TryStatement){
+			myStmt = (TryStatement)stmt;
+		}else if(stmt instanceof  TypeDeclarationStatement){
+			myStmt = (TypeDeclarationStatement)stmt;
+		}else if(stmt instanceof  VariableDeclarationStatement){
+			myStmt = (VariableDeclarationStatement)stmt;
+		}else if(stmt instanceof  WhileStatement){
+			myStmt = (WhileStatement)stmt;
+		}else if(stmt instanceof  EnhancedForStatement){
+			myStmt = (EnhancedForStatement)stmt;
+		}
+		if(myStmt != null){
+			Element myStmtElement = stmtElement.addElement(myStmt.getClass().getSimpleName().substring(0, 1).toLowerCase()+myStmt.getClass().getSimpleName().substring(1));
+			elements.put(myStmt, myStmtElement);
+		}
+	}
+
+	@Override
+	public boolean visit(AssertStatement node) {
+		Element astmtElement = elements.get(node);
+
+		//get expression
+		Expression exp = node.getExpression();
+		Element expElement = astmtElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		//get message
+		Expression msg = node.getMessage();
+		Element msgElement = astmtElement.addElement("message").addElement("expression");
+		elements.put(msg, msgElement);
+		expVisit(msg, msgElement);
+
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(BreakStatement node) {
+		Element bkstmtElement = elements.get(node);
+		SimpleName sname = node.getLabel();
+		if(sname != null){
+			Element snameElement = bkstmtElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+		}		
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ConstructorInvocation node) {
+		Element ciElement = elements.get(node);
+
+		//get TypeArgument
+		List<Type> taList = node.typeArguments();
+		Iterator<Type> itTa = taList.iterator();
+		while(itTa.hasNext()){
+			Type ta = itTa.next();
+			Element taElement = ciElement.addElement("typeArgument").addElement("tp");
+			elements.put(ta,taElement);
+		}
+
+		//get Argument
+		List<Expression> expList = node.arguments();
+		Iterator<Expression> itExp = expList.iterator();
+		while(itExp.hasNext()){
+			Expression exp = itExp.next();
+			Element expElement = ciElement.addElement("argument").addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ContinueStatement node) {
+		Element cnstmtElement = elements.get(node);
+		SimpleName sname = node.getLabel();
+		if(sname != null){
+			Element snameElement = cnstmtElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+		}		
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(DoStatement node) {
+		Element dostmtElement = elements.get(node);
+
+		Statement stmt = node.getBody();
+		Element stmtElement = dostmtElement.addElement("statement");
+		elements.put(stmt,stmtElement);
+		stmtVisit(stmt, stmtElement);
+
+		Expression exp = node.getExpression();
+		Element expElement = dostmtElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(EmptyStatement node) {
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ExpressionStatement node) {
+		Element expStatement = elements.get(node);
+		if(expStatement != null){
+			Expression exp = node.getExpression();
+			Element expElement = expStatement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ForStatement node) {
+		Element fstmtElement = elements.get(node);
+		if(fstmtElement != null){
+			//forInit
+			List<Expression> initList = node.initializers();
+			Iterator<Expression> itInit = initList.iterator();
+			while(itInit.hasNext()){
+				Expression init = itInit.next();
+				Element initElement = fstmtElement.addElement("forInit").addElement("expression");
+				elements.put(init, initElement);
+				expVisit(init, initElement);
+			}
+
+			//expression
+			Expression exp = node.getExpression();
+			if(exp != null){
+				Element expElement = fstmtElement.addElement("expression");
+				elements.put(exp, expElement);
+				expVisit(exp, expElement);
+			}
+
+			//forUpdate
+			List<Expression> upList = node.updaters();
+			Iterator<Expression> itUp = initList.iterator();
+			while(itUp.hasNext()){
+				Expression update = itUp.next();
+				Element updateElement = fstmtElement.addElement("forUpdate").addElement("expression");
+				elements.put(update, updateElement);
+				expVisit(update, updateElement);
+			}
+
+			//statement
+			Statement stmt = node.getBody();
+			Element stmtElement = fstmtElement.addElement("statement");
+			elements.put(stmt, stmtElement);
+			stmtVisit(stmt, stmtElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(IfStatement node) {
+		Element ifstmtElement = elements.get(node);
+		if(ifstmtElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = ifstmtElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+
+			Statement thenstmt = node.getThenStatement();
+			Element thenElement = ifstmtElement.addElement("thenStatement");
+			elements.put(thenstmt, thenElement);
+			stmtVisit(thenstmt, thenElement);
+
+			Statement elsestmt = node.getElseStatement();
+			Element elseElement = ifstmtElement.addElement("elseStatement");
+			elements.put(elsestmt, elseElement);
+			stmtVisit(elsestmt, elseElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(LabeledStatement node) {
+		Element lbstmtElement = elements.get(node);
+		if(lbstmtElement != null){
+			SimpleName sname = node.getLabel();
+			Element snameElement = lbstmtElement.addElement("simpleName");
+			elements.put(sname, snameElement);
+
+			Statement stmt = node.getBody();
+			Element stmtElement = lbstmtElement.addElement("statement");
+			elements.put(stmt, stmtElement);
+			stmtVisit(stmt, stmtElement);
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ReturnStatement node) {
+		Element returnElement = elements.get(node);
+		if(returnElement != null){
+			Expression exp = node.getExpression();
+			if(exp != null){
+				Element expElement = returnElement.addElement("expression");
+				elements.put(exp, expElement);
+				expVisit(exp, expElement);
+			}
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(SuperConstructorInvocation node) {
+		Element ciElement = elements.get(node);
+
+		//get Expression
+		Expression exp2 = node.getExpression();
+		Element expElement2 = ciElement.addElement("expression");
+		elements.put(exp2,expElement2);
+		expVisit(exp2, expElement2);
+		
+		//get TypeArgument
+		List<Type> taList = node.typeArguments();
+		Iterator<Type> itTa = taList.iterator();
+		while(itTa.hasNext()){
+			Type ta = itTa.next();
+			Element taElement = ciElement.addElement("typeArgument").addElement("tp");
+			elements.put(ta,taElement);
+		}
+
+		//get Argument
+		List<Expression> expList = node.arguments();
+		Iterator<Expression> itExp = expList.iterator();
+		while(itExp.hasNext()){
+			Expression exp = itExp.next();
+			Element expElement = ciElement.addElement("argument").addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+		}
+		return super.visit(node);
+	}
+	
+	@Override
+	public boolean visit(SwitchCase node) {
+		Element swcElement = elements.get(node);
+		if(swcElement != null){
+			Expression exp = node.getExpression();
+			if(exp != null){
+				Element expElement = swcElement.addElement("expression");
+				elements.put(exp, expElement);
+				expVisit(exp, expElement);
+			}
+		}
+		return super.visit(node);
+	}
+	
+	@Override
+	public boolean visit(SwitchStatement node) {
+		Element swElement = elements.get(node);
+		if(swElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = swElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+			
+			List<Statement> stmtList = node.statements();
+			Iterator<Statement> itStmt = stmtList.iterator();
+			while(itStmt.hasNext()){
+				Statement stmt = itStmt.next();
+				if(stmt instanceof SwitchCase){
+					SwitchCase swc = (SwitchCase)stmt;
+					Element swcElement = swElement.addElement("switchBlock").addElement("switchCase");
+					elements.put(swc, swcElement);
+				}else{
+					Element stmtElement = swElement.addElement("switchBlock").addElement("statement");
+					elements.put(stmt, stmtElement);
+					stmtVisit(stmt, stmtElement);
+				}
+			}
+		}
+		return super.visit(node);
+	}
+	
+	@Override
+	public boolean visit(SynchronizedStatement node) {
+		Element syncElement = elements.get(node);
+		if(syncElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = syncElement.addElement("expression");
+			elements.put(exp,expElement);
+			expVisit(exp, expElement);
+			
+			Block block = node.getBody();
+			Element blockElement = syncElement.addElement("block");
+			elements.put(block, blockElement);
+			blockVisit(block, blockElement);
+		}
+		return super.visit(node);
+	}
+	
+	@Override
+	public boolean visit(EnhancedForStatement node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ThrowStatement node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(TypeDeclarationStatement node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(VariableDeclarationStatement node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(WhileStatement node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	//expression
+	public void expVisit(Expression exp,Element expElement){
+
+	}
+
 	//Tokens
-
-
-
-
-
-	//Modifier Visit Blocks
 	@Override
 	public boolean visit(Modifier node) {
 		Element modifier= elements.get(node);
@@ -373,7 +751,6 @@ public class XMLBuilder extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	//Name Visit Blocks
 	public void nameVisit(Name name,Element nameElement){
 		//Name Element
 		if(name.isQualifiedName()){
@@ -444,7 +821,6 @@ public class XMLBuilder extends ASTVisitor {
 	}
 
 	//Types
-	//Type Visit Blocks
 	public void tpVisit(Type type,Element typeElement){
 		Type tp = null;
 		if(type.isPrimitiveType()){

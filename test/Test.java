@@ -12,6 +12,13 @@ public class Test {
 	private static XXX b = null;
 	static{
 		int a;
+		System.out.println("bla");
+		sum = l.stream()
+				.map(e -> new Integer(e))
+				.filter(n -> Primes.isPrime(n))
+				.distinct()
+				.reduce(0, (x,y) -> x+y);  
+		System.out.println("bla");
 	}
 	public void A(int a,int b) throws NullPointerException{}
 	public void B(){}
@@ -23,7 +30,7 @@ public class Test {
 				.map(e -> new Integer(e))
 				.filter(n -> Primes.isPrime(n))
 				.distinct()
-				.reduce(0, (x,y) -> x+y); // equivalent to .sum()
+				.reduce(0, (x,y) -> x+y); 
 		System.out.println("distinctPrimarySum result is: " + sum);
 	}
 	
@@ -33,7 +40,6 @@ public class Test {
 		for(String e : l){
 			int n = new Integer(e);
 			if (Primes.isPrime(n)){
-				//distinct() This part is not support;
 				sum += n;
 			}
 		}
