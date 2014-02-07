@@ -36,7 +36,8 @@ public class Main {
             reader = new BufferedReader(new FileReader(file));
             String tempString = null;
             while ((tempString = reader.readLine()) != null) {
-                result += tempString;
+                //result += tempString;
+            	result = result + tempString + '\n';
             }
             reader.close();
         } catch (IOException e) {
