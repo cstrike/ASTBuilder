@@ -12,6 +12,7 @@ public class Test {
 	private static XXX b = null;
 	static{
 		int a;
+		//adb
 		System.out.println("bla");
 		sum = l.stream()
 				.map(e -> new Integer(e))

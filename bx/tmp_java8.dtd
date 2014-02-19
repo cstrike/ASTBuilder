@@ -88,6 +88,7 @@
 <!ELEMENT forInit (expression)>
 <!ELEMENT forUpdate (expression)>
 <!ELEMENT ifStatement (expression, thenStatement, elseStatement?)>
+<!ATTLIST ifStatement isFilter CDATA #REQUIRED>
 <!ELEMENT thenStatement (statement)>
 <!ELEMENT elseStatement (statement)>
 <!ELEMENT labeledStatement (simpleName, statement)>
@@ -98,39 +99,16 @@
 <!ELEMENT switchBlock (switchCase | statement)>
 <!ELEMENT sychronizedStatement (expression, block)>
 <!ELEMENT throwsStatement (expression)>
-<!ELEMENT tryStatement (block, (catchClause+ | (catchClause*, finally)))>
-
-
-
-
-<!ELEMENT localVariableDeclarationStatement (localVariableDeclaration)>
-<!ELEMENT localVariableDeclaration (tp, variableDeclarator+)>
-
-
-
-
-<!ATTLIST ifStatement isFilter CDATA #REQUIRED>
-<!ELEMENT switchStatement (expression, switchBlock)>
-<!ELEMENT switchBlock (switchBlockStatementGroup*, switchLabel*)>
-<!ELEMENT switchBlockStatementGroup (switchLabel+, statement+)>
-<!ELEMENT switchLabel (constantExpression)> <!-- If constantExpression is empty or null, it means that no case but default. -->  
-<!ELEMENT whileStatement (expression, statement)>
-
-
-
-
-
-
-
-<!ELEMENT synchronizedStatement (expression, block)>
-
+<!ELEMENT tryStatement (resources*, block, (catchClause+ | (catchClause*, finally)))>
+<!ELEMENT resources (variableDeclarationExpression)>
 <!ELEMENT catchClause (formalParameter, block)>
+<!ELEMENT formalParameter (singleVariableDeclaration)>
 <!ELEMENT finally (block)>
-<!ELEMENT enhancedForStatement (itVariable, itCollection, statement)>
-<!ATTLIST enhancedForStatement 
-	  id ID #REQUIRED>
-<!ELEMENT itVariable (tp, variableDeclarator)>
-<!ELEMENT itCollection (expression)>
+<!ELEMENT typeDeclarationStatement (typeDeclaration|enumDeclaration)>
+<!ELEMENT variableDeclarationStatement (modifier*, tp, variableDeclarationFragment+)>
+<!ELEMENT whileStatement (expression, statement)>
+<!ELEMENT enhancedForStatement (formalParameter, expression, statement)>
+<!ATTLIST enhancedForStatement id ID #REQUIRED>
 <!ELEMENT operationChainStatement (primary, operation*)>
 <!ELEMENT operation (methodInvocation)>
 
