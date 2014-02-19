@@ -113,11 +113,119 @@
 <!ELEMENT operation (methodInvocation)>
 
 <!----------Expressions---------->
+<!ELEMENT expression
+		( arrayAccess
+    	| arrayCreation
+    	| arrayInitializer
+    	| assignment
+    	| booleanLiteral
+    	| castExpression
+   		| characterLiteral
+    	| classInstanceCreation
+    	| conditionalExpression
+    	| fieldAccess
+    	| infixExpression
+    	| instanceofExpression
+   		| methodInvocation
+    	| nullLiteral
+    	| numberLiteral
+    	| parenthesizedExpression
+    	| postfixExpression
+    	| prefixExpression
+    	| stringLiteral
+    	| superFieldAccess
+    	| superMethodInvocation
+    	| thisExpression
+    	| typeLiteral
+    	| variableDeclarationExpression
+    	)>
+<!ELEMENT arrayAccess (array, index)>
+<!ELEMENT array (expression)>
+<!ELEMENT index (expression)>
+<!ELEMENT arrayCreation (arrayType, arrayInitializer)>
+<!ATTLIST arrayCreation dimensions CDATA #REQUIRED> 
+<!ELEMENT arrayInitializer (expression+)>
+<!ELEMENT assignment (leftHandSide, assignmentOperator, rightHandSide)>
+<!ELEMENT leftHandSide (expression)>
+<!ELEMENT assignmentOperator (assign | bit_and_assign | bit_or_assign | bit_xor_assign | divide_assign | left_shift_assign | minus_assign | plus_assign | remainder_assign | right_shift_signed_assign | right_shift_unsigned_assign | times_assign)>
+<!ELEMENT assign EMPTY>
+<!ELEMENT bit_and_assign EMPTY>
+<!ELEMENT bit_or_assign EMPTY>
+<!ELEMENT bit_xor_assign EMPTY>
+<!ELEMENT divide_assign EMPTY>
+<!ELEMENT left_shift_assign EMPTY>
+<!ELEMENT minus_assign EMPTY>
+<!ELEMENT plus_assign EMPTY>
+<!ELEMENT remainder_assign EMPTY>
+<!ELEMENT right_shift_signed_assign EMPTY>
+<!ELEMENT right_shift_unsigned_assign EMPTY>
+<!ELEMENT times_assign EMPTY>
+<!ELEMENT rightHandSide (expression)>
+<!ELEMENT booleanLiteral (#PCDATA)> <!-- true or false -->
+<!ELEMENT castExpression (tp, expression)>
+<!ELEMENT characterLiteral (#PCDATA)>
+<!ELEMENT classInstanceCreation (expression, typeParemeter*, tp, arguments*, anonymousClassDeclaration)>
+<!ELEMENT arguments (expression)>
+<!ELEMENT conditionalExpression (expression, thenExpression, elseExpression)>
+<!ELEMENT thenExpression (expression)>
+<!ELEMENT elseExpression (expression)>
+<!ELEMENT fieldAccess (expression, simpleName)>
+<!ELEMENT infixExpression (leftOperand, infixOperator, rightOperand, extendedOperands*)>
+<!ATTLIST infixExpression hasExtendedOperands CDATA #REQUIRED>
+<!ELEMENT leftOperand (expression)>
+<!ELEMENT rightOperand (expression)>
+<!ELEMENT infixOperator ( and | conditional_and | conditional_or | divide | equals | greater | greater_equals | left_shift | less | less_equals | minus | not_equals | or | plus | remainder | right_shift_signed | right_shift_unsigned | times | xor)>
+<!ELEMENT and EMPTY>
+<!ELEMENT conditional_and EMPTY>
+<!ELEMENT conditional_or EMPTY>
+<!ELEMENT divide EMPTY>
+<!ELEMENT equals EMPTY>
+<!ELEMENT greater EMPTY>
+<!ELEMENT greater_equals EMPTY>
+<!ELEMENT left_shift EMPTY>
+<!ELEMENT less EMPTY>
+<!ELEMENT less_equals EMPTY>
+<!ELEMENT minus EMPTY>
+<!ELEMENT not_equals EMPTY>
+<!ELEMENT or EMPTY>
+<!ELEMENT plus EMPTY>
+<!ELEMENT remainder EMPTY>
+<!ELEMENT right_shift_signed EMPTY>
+<!ELEMENT right_shift_unsigned EMPTY>
+<!ELEMENT times EMPTY>
+<!ELEMENT xor EMPTY>
+<!ELEMENT extendedOperands (expression)>
+<!ELEMENT instanceofExpression (expression, type)>
+<!ELEMENT methodInvocation (expression, typeParemeter*, simpleName, arguments*)>
+<!ELEMENT nullLiteral EMPTY>
+<!ELEMENT numberLiteral (#PCDATA)>
+<!ELEMENT parenthesizedExpression (expression)>
+<!ELEMENT postfixExpression (expression, postfixOperator)>
+<!ELEMENT postfixOperator ( decrement | increment )>
+<!ELEMENT decrement EMPTY>
+<!ELEMENT increment EMPTY>
+<!ELEMENT prefixExpression (prefixOperator, expression)>
+<!ELEMENT prefixOperator ( increment | decrement | plus | minus | complement | not)>
+<!ELEMENT complement EMPTY>
+<!ELEMENT not EMPTY>
+<!ELEMENT stringLiteral (#PCDATA)>
+<!ELEMENT superFieldAccess (name?, simpleName)>
+<!ELEMENT superMethodInvocation (name?, typeParameter*, simpleName, arguments*)>
+<!ELEMENT thisExpression (name?)>
+<!ELEMENT typeLiteral (tp)>
+<!ELEMENT variableDeclarationExpression (modifier*, tp, variableDeclarationFragment+)>
 
+
+    	
+    	
+    	
+    	
+    	
+    	
 <!ELEMENT constantExpression (expression)>
 <!ELEMENT expression (assignmentExpression)>
 <!ELEMENT assignmentExpression (conditionalExpression | assignment)>
-<!ELEMENT assignment (leftHandSide, assignmentOperator, assignmentExpression)>
+
 <!ELEMENT leftHandSide (expressionName | fieldAccess | arrayAccess)>
 <!ELEMENT assignmentOperator (equal | mutipleEqual | slashEqual | percentEqual | plusEqual | minusEqual | llEqual | rrEqual | rrrEqual | andEqual | cupEqual | orEqual)> <!-- = | *= | /= | %= | += | -= | <<= | >>= | >>>= | &= | ^= | |= -->
 <!ELEMENT equal EMPTY>
