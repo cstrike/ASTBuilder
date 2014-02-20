@@ -142,8 +142,8 @@
 <!ELEMENT arrayAccess (array, index)>
 <!ELEMENT array (expression)>
 <!ELEMENT index (expression)>
-<!ELEMENT arrayCreation (arrayType, arrayInitializer)>
-<!ATTLIST arrayCreation dimensions CDATA #REQUIRED> 
+<!ELEMENT arrayCreation (arrayType, dimensions*, arrayInitializer)>
+<!ELEMENT dimensions (expression)>
 <!ELEMENT arrayInitializer (expression+)>
 <!ELEMENT assignment (leftHandSide, assignmentOperator, rightHandSide)>
 <!ELEMENT leftHandSide (expression)>

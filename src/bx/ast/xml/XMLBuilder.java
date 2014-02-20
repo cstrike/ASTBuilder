@@ -844,9 +844,253 @@ public class XMLBuilder extends ASTVisitor {
 
 	//expression
 	public void expVisit(Expression exp,Element expElement){
-
+		Expression exp2 = null;
+		if(exp instanceof ArrayAccess){
+			exp2 = (ArrayAccess)exp;
+		}else if(exp instanceof ArrayCreation){
+			exp2 = (ArrayCreation)exp;
+		}else if(exp instanceof ArrayCreation){
+			exp2 = (ArrayCreation)exp;
+		}
+		else if(exp instanceof ArrayInitializer){
+			exp2 = (ArrayInitializer)exp;
+		}
+		else if(exp instanceof Assignment){
+			exp2 = (Assignment)exp;
+		}
+		else if(exp instanceof BooleanLiteral){
+			exp2 = (BooleanLiteral)exp;
+		}
+		else if(exp instanceof CastExpression){
+			exp2 = (CastExpression)exp;
+		}
+		else if(exp instanceof CharacterLiteral){
+			exp2 = (CharacterLiteral)exp;
+		}
+		else if(exp instanceof ClassInstanceCreation){
+			exp2 = (ClassInstanceCreation)exp;
+		}
+		else if(exp instanceof ConditionalExpression){
+			exp2 = (ConditionalExpression)exp;
+		}
+		else if(exp instanceof FieldAccess){
+			exp2 = (FieldAccess)exp;
+		}
+		else if(exp instanceof InfixExpression){
+			exp2 = (InfixExpression)exp;
+		}
+		else if(exp instanceof InstanceofExpression){
+			exp2 = (InstanceofExpression)exp;
+		}
+		else if(exp instanceof  MethodInvocation){
+			exp2 = (MethodInvocation)exp;
+		}
+		else if(exp instanceof   NullLiteral){
+			exp2 = (NullLiteral)exp;
+		}else if(exp instanceof  NumberLiteral){
+			exp2 = (NumberLiteral)exp;
+		}else if(exp instanceof  ParenthesizedExpression){
+			exp2 = (ParenthesizedExpression)exp;
+		}else if(exp instanceof  PostfixExpression){
+			exp2 = ( PostfixExpression)exp;
+		}else if(exp instanceof  PrefixExpression){
+			exp2 = (PrefixExpression)exp;
+		}else if(exp instanceof  StringLiteral){
+			exp2 = (StringLiteral)exp;
+		}else if(exp instanceof  SuperFieldAccess){
+			exp2 = (SuperFieldAccess)exp;
+		}else if(exp instanceof  SuperMethodInvocation){
+			exp2 = (SuperMethodInvocation)exp;
+		}
+		else if(exp instanceof  ThisExpression){
+			exp2 = (ThisExpression)exp;
+		}
+		else if(exp instanceof  TypeLiteral){
+			exp2 = (TypeLiteral)exp;
+		}
+		else if(exp instanceof  VariableDeclarationExpression){
+			exp2 = (VariableDeclarationExpression)exp;
+		}
+		
+		if(exp2 != null){
+			Element myExpElement = expElement.addElement(exp2.getClass().getSimpleName().substring(0, 1).toLowerCase()+exp2.getClass().getSimpleName().substring(1));
+			elements.put(exp2, myExpElement);
+		}
 	}
 	
+
+	@Override
+	public boolean visit(ArrayAccess node) {
+		Element aaElement = elements.get(node);
+		Expression array = node.getArray();
+		Element arrayElement = aaElement.addElement("array").addElement("expression");
+		elements.put(array, arrayElement);
+		
+		Expression index = node .getIndex();
+		Element indexElement = aaElement.addElement("index").addElement("expression");
+		elements.put(index, indexElement);
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayCreation node) {
+		Element aaElement = elements.get(node);
+		ArrayType at = node.getType();
+		Element atElement = aaElement.addElement("arrayType");
+		elements.put(at, atElement);
+		
+		List<Expression> expList = node.dimensions();
+		if(expList != null){
+			for (Expression exp : expList){
+				Element expElement = aaElement.addElement("dimensions").addElement("expression");
+				elements.put(exp, expElement);
+			}
+		}
+		
+		ArrayInitializer ai = node.getInitializer();
+		Element aiElement = aaElement.addElement("arrayInitializer");
+		elements.put(ai, aiElement);
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayInitializer node) {
+		Element aiElement = elements.get(node);
+		List<Expression> expList = node.expressions();
+		if(expList != null){
+			for (Expression exp : expList){
+				Element expElement = aiElement.addElement("expression");
+				elements.put(exp, expElement);
+			}
+		}
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(Assignment node) {
+		
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(BooleanLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(CastExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(CharacterLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ClassInstanceCreation node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ConditionalExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(FieldAccess node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(InfixExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(InstanceofExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(MethodInvocation node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(NullLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(NumberLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ParenthesizedExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(PostfixExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(PrefixExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(StringLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(SuperFieldAccess node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(SuperMethodInvocation node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(ThisExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(TypeLiteral node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
+
+	@Override
+	public boolean visit(VariableDeclarationExpression node) {
+		// TODO Auto-generated method stub
+		return super.visit(node);
+	}
 
 	//Tokens
 	@Override
