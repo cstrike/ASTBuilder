@@ -12,6 +12,8 @@ public class Test {
 	private static XXX b = null;
 	static{
 		int a;
+		x = x+1;
+		x = false;
 		//adb
 		System.out.println("bla");
 		sum = l.stream()

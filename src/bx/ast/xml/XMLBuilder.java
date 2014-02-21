@@ -11,6 +11,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.eclipse.jdt.core.dom.*;
+import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 
 public class XMLBuilder extends ASTVisitor {
@@ -320,6 +321,7 @@ public class XMLBuilder extends ASTVisitor {
 			Expression exp = (Expression)node.getStructuralProperty(VariableDeclarationFragment.INITIALIZER_PROPERTY);
 			Element expElement = vdfElement.addElement("expression");
 			elements.put(exp,expElement);
+			expVisit(exp, expElement);
 		}
 		return super.visit(node);
 	}
@@ -783,23 +785,25 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(VariableDeclarationStatement node) {
 		Element vdsElement = elements.get(node);
-		List<Modifier> modList = node.modifiers();
-		if(modList != null){
-			for(Modifier mod : modList){
-				Element modElement = vdsElement.addElement("modifier");
-				elements.put(mod,modElement);
+		if(vdsElement != null){
+			List<Modifier> modList = node.modifiers();
+			if(modList != null){
+				for(Modifier mod : modList){
+					Element modElement = vdsElement.addElement("modifier");
+					elements.put(mod,modElement);
+				}
 			}
-		}
 
-		Type tp = node.getType();
-		Element tpElement = vdsElement.addElement("tp");
-		elements.put(tp, tpElement);
-		tpVisit(tp, tpElement);
+			Type tp = node.getType();
+			Element tpElement = vdsElement.addElement("tp");
+			elements.put(tp, tpElement);
+			tpVisit(tp, tpElement);
 
-		List<VariableDeclarationFragment> vdfList = node.fragments();
-		for(VariableDeclarationFragment vdf : vdfList){
-			Element vdfElement = vdsElement.addElement("variableDeclarationFragment");
-			elements.put(vdf,vdfElement);
+			List<VariableDeclarationFragment> vdfList = node.fragments();
+			for(VariableDeclarationFragment vdf : vdfList){
+				Element vdfElement = vdsElement.addElement("variableDeclarationFragment");
+				elements.put(vdf,vdfElement);
+			}
 		}
 		return super.visit(node);
 	}
@@ -811,12 +815,12 @@ public class XMLBuilder extends ASTVisitor {
 		Element expElement = whileElement.addElement("expression");
 		elements.put(exp, expElement);
 		expVisit(exp, expElement);
-		
+
 		Statement stmt = node.getBody();
 		Element stmtElement = whileElement.addElement("statement");
 		elements.put(stmt, stmtElement);
 		stmtVisit(stmt, stmtElement);
-		
+
 		return super.visit(node);
 	}
 
@@ -826,17 +830,17 @@ public class XMLBuilder extends ASTVisitor {
 		SingleVariableDeclaration svd = node.getParameter();
 		Element svdElement = efsElement.addElement("formalParameter").addElement("singleVariableDeclaration");
 		elements.put(svd, svdElement);
-		
+
 		Expression exp = node.getExpression();
 		Element expElement = efsElement.addElement("expression");
 		elements.put(exp, expElement);
 		expVisit(exp, expElement);
-		
+
 		Statement stmt = node.getBody();
 		Element stmtElement = efsElement.addElement("statement");
 		elements.put(stmt, stmtElement);
 		stmtVisit(stmt, stmtElement);
-		
+
 		return super.visit(node);
 	}
 
@@ -911,13 +915,13 @@ public class XMLBuilder extends ASTVisitor {
 		else if(exp instanceof  VariableDeclarationExpression){
 			exp2 = (VariableDeclarationExpression)exp;
 		}
-		
+
 		if(exp2 != null){
 			Element myExpElement = expElement.addElement(exp2.getClass().getSimpleName().substring(0, 1).toLowerCase()+exp2.getClass().getSimpleName().substring(1));
 			elements.put(exp2, myExpElement);
 		}
 	}
-	
+
 
 	@Override
 	public boolean visit(ArrayAccess node) {
@@ -925,7 +929,7 @@ public class XMLBuilder extends ASTVisitor {
 		Expression array = node.getArray();
 		Element arrayElement = aaElement.addElement("array").addElement("expression");
 		elements.put(array, arrayElement);
-		
+
 		Expression index = node .getIndex();
 		Element indexElement = aaElement.addElement("index").addElement("expression");
 		elements.put(index, indexElement);
@@ -938,7 +942,7 @@ public class XMLBuilder extends ASTVisitor {
 		ArrayType at = node.getType();
 		Element atElement = aaElement.addElement("arrayType");
 		elements.put(at, atElement);
-		
+
 		List<Expression> expList = node.dimensions();
 		if(expList != null){
 			for (Expression exp : expList){
@@ -946,7 +950,7 @@ public class XMLBuilder extends ASTVisitor {
 				elements.put(exp, expElement);
 			}
 		}
-		
+
 		ArrayInitializer ai = node.getInitializer();
 		Element aiElement = aaElement.addElement("arrayInitializer");
 		elements.put(ai, aiElement);
@@ -968,127 +972,363 @@ public class XMLBuilder extends ASTVisitor {
 
 	@Override
 	public boolean visit(Assignment node) {
-		
+		Element assignElement = elements.get(node);
+		if(assignElement != null){
+			Expression left = node.getLeftHandSide();
+			Element leftElement = assignElement.addElement("leftHandSide").addElement("expression");
+			elements.put(left, leftElement);
+			expVisit(left, leftElement);
+
+			Expression right = node.getRightHandSide();
+			Element rightElement = assignElement.addElement("rightHandSide").addElement("expression");
+			elements.put(right, rightElement);
+			expVisit(right, rightElement);
+
+			Operator op = node.getOperator();
+			Element opElement = assignElement.addElement("assignmentOperator");
+			opElement.setText(op.toString());
+		}
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(BooleanLiteral node) {
-		// TODO Auto-generated method stub
+		Element boolElement = elements.get(node);
+		boolElement.setText(node.toString());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(CastExpression node) {
-		// TODO Auto-generated method stub
+		Element castElement = elements.get(node);
+		Type tp = node.getType();
+		Element tpElement = castElement.addElement("tp");
+		tpVisit(tp, tpElement);
+
+		Expression exp = node.getExpression();
+		Element expElement = castElement.addElement("expression");
+		expVisit(exp, expElement);
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(CharacterLiteral node) {
-		// TODO Auto-generated method stub
+		Element clElement = elements.get(node);
+		clElement.setText(node.getEscapedValue());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ClassInstanceCreation node) {
-		// TODO Auto-generated method stub
+		Element cicElement = elements.get(node);
+		if(cicElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = cicElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+
+			//get TypeArgument
+			List<Type> taList = node.typeArguments();
+			Iterator<Type> itTa = taList.iterator();
+			while(itTa.hasNext()){
+				Type ta = itTa.next();
+				Element taElement = cicElement.addElement("typeArgument").addElement("tp");
+				elements.put(ta,taElement);
+			}
+
+			//get tp
+			Type type = node.getType();
+			Element typeElement = cicElement.addElement("tp");
+			elements.put(type, typeElement);
+			tpVisit(type, typeElement);
+
+			//get Argument
+			List<Expression> expList = node.arguments();
+			Iterator<Expression> itExp = expList.iterator();
+			while(itExp.hasNext()){
+				Expression argexp = itExp.next();
+				Element argexpElement = cicElement.addElement("argument").addElement("expression");
+				elements.put(exp, expElement);
+				expVisit(exp, expElement);
+			}
+
+			//anonymousClassDeclaration
+		}
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ConditionalExpression node) {
-		// TODO Auto-generated method stub
+		Element condElement = elements.get(node);
+		Expression exp = node.getExpression();
+		Element expElement = condElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		Expression thenexp = node.getThenExpression();
+		Element thenexpElement = condElement.addElement("thenExpression").addElement("expression");
+		elements.put(thenexp, thenexpElement);
+		expVisit(thenexp, thenexpElement);
+
+		Expression elseexp = node.getExpression();
+		Element elseexpElement = condElement.addElement("elseExpression").addElement("expression");
+		elements.put(elseexp, elseexpElement);
+		expVisit(elseexp, elseexpElement);
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(FieldAccess node) {
-		// TODO Auto-generated method stub
+		Element faElement = elements.get(node);
+		Expression exp = node.getExpression();
+		Element expElement = faElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		SimpleName sn = node.getName();
+		Element snElement = faElement.addElement("simpleName");
+		elements.put(sn, snElement);
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(InfixExpression node) {
-		// TODO Auto-generated method stub
+		Element infixElement = elements.get(node);
+		if(infixElement != null){
+			infixElement.addAttribute("hasExtendedOperands", ""+node.hasExtendedOperands());
+			Expression left = node.getLeftOperand();
+			Element leftElement = infixElement.addElement("leftOperand").addElement("expression");
+			elements.put(left, leftElement);
+			expVisit(left, leftElement);
+
+			Expression right = node.getRightOperand();
+			Element rightElement = infixElement.addElement("rightOperand").addElement("expression");
+			elements.put(right, rightElement);
+			expVisit(right, rightElement);
+
+			org.eclipse.jdt.core.dom.InfixExpression.Operator op = node.getOperator();
+			Element opElement = infixElement.addElement("infixOperator");
+			opElement.setText(op.toString());
+
+			if(node.hasExtendedOperands()){
+				List<Expression> expList = node.extendedOperands();
+				for(Expression exp : expList){
+					Element expElement = infixElement.addElement("expression");
+					elements.put(exp, expElement);
+					expVisit(exp, expElement);
+				}
+			}
+		}
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(InstanceofExpression node) {
-		// TODO Auto-generated method stub
+		Element ioeElement = elements.get(node);
+		Expression exp = node.getLeftOperand();
+		Element expElement = ioeElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		Type type = node.getRightOperand();
+		Element typeElement = ioeElement.addElement("tp");
+		elements.put(type, typeElement);
+		tpVisit(type, typeElement);
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(MethodInvocation node) {
-		// TODO Auto-generated method stub
+		Element cicElement = elements.get(node);
+		if(cicElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = cicElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+
+			//get TypeArgument
+			List<Type> taList = node.typeArguments();
+			Iterator<Type> itTa = taList.iterator();
+			while(itTa.hasNext()){
+				Type ta = itTa.next();
+				Element taElement = cicElement.addElement("typeArgument").addElement("tp");
+				elements.put(ta,taElement);
+			}
+
+			SimpleName sn = node.getName();
+			Element snElement = cicElement.addElement("simpleName");
+			elements.put(sn, snElement);
+
+			//get Argument
+			List<Expression> expList = node.arguments();
+			Iterator<Expression> itExp = expList.iterator();
+			while(itExp.hasNext()){
+				Expression argexp = itExp.next();
+				Element argexpElement = cicElement.addElement("argument").addElement("expression");
+				elements.put(argexp, argexpElement);
+				expVisit(argexp, argexpElement);
+			}
+		}
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(NullLiteral node) {
-		// TODO Auto-generated method stub
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(NumberLiteral node) {
-		// TODO Auto-generated method stub
+		Element nlElement = elements.get(node);
+		nlElement.setText(node.getToken());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ParenthesizedExpression node) {
-		// TODO Auto-generated method stub
+		Element peElement = elements.get(node);
+		Expression exp = node.getExpression();
+		Element expElement = peElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(PostfixExpression node) {
-		// TODO Auto-generated method stub
+		Element peElement = elements.get(node);
+		Expression exp = node.getOperand();
+		Element expElement = peElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		org.eclipse.jdt.core.dom.PostfixExpression.Operator op = node.getOperator();
+		Element opElement = peElement.addElement("postfixOperator");
+		opElement.setText(op.toString());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(PrefixExpression node) {
-		// TODO Auto-generated method stub
+		Element peElement = elements.get(node);
+		Expression exp = node.getOperand();
+		Element expElement = peElement.addElement("expression");
+		elements.put(exp, expElement);
+		expVisit(exp, expElement);
+
+		org.eclipse.jdt.core.dom.PrefixExpression.Operator op = node.getOperator();
+		Element opElement = peElement.addElement("prefixOperator");
+		opElement.setText(op.toString());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(StringLiteral node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		elem.setText(node.getEscapedValue());
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(SuperFieldAccess node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Name name = node.getQualifier();
+		if(name != null){
+			Element nameElement = elem.addElement("name");
+			elements.put(name,nameElement);
+			nameVisit(name, nameElement);
+		}
+		SimpleName sn = node.getName();
+		Element snElement = elem.addElement("simpleName");
+		elements.put(sn, snElement);
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(SuperMethodInvocation node) {
-		// TODO Auto-generated method stub
+		Element cicElement = elements.get(node);
+		Name name = node.getQualifier();
+		if(name != null){
+			Element nameElement = cicElement.addElement("name");
+			elements.put(name,nameElement);
+			nameVisit(name, nameElement);
+		}
+
+		//get TypeArgument
+		List<Type> taList = node.typeArguments();
+		Iterator<Type> itTa = taList.iterator();
+		while(itTa.hasNext()){
+			Type ta = itTa.next();
+			Element taElement = cicElement.addElement("typeArgument").addElement("tp");
+			elements.put(ta,taElement);
+		}
+
+		SimpleName sn = node.getName();
+		Element snElement = cicElement.addElement("simpleName");
+		elements.put(sn, snElement);
+
+		//get Argument
+		List<Expression> expList = node.arguments();
+		Iterator<Expression> itExp = expList.iterator();
+		while(itExp.hasNext()){
+			Expression exp = itExp.next();
+			Element expElement = cicElement.addElement("argument").addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+		}
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ThisExpression node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Name name = node.getQualifier();
+		if(name != null){
+			Element nameElement = elem.addElement("name");
+			elements.put(name,nameElement);
+			nameVisit(name, nameElement);
+		}
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(TypeLiteral node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Type type = node.getType();
+		Element typeElement = elem.addElement("tp");
+		elements.put(type,typeElement);
+		tpVisit(type, typeElement);
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(VariableDeclarationExpression node) {
-		// TODO Auto-generated method stub
+		Element vdsElement = elements.get(node);
+		if(vdsElement != null){
+			List<Modifier> modList = node.modifiers();
+			if(modList != null){
+				for(Modifier mod : modList){
+					Element modElement = vdsElement.addElement("modifier");
+					elements.put(mod,modElement);
+				}
+			}
+
+			Type tp = node.getType();
+			Element tpElement = vdsElement.addElement("tp");
+			elements.put(tp, tpElement);
+			tpVisit(tp, tpElement);
+
+			List<VariableDeclarationFragment> vdfList = node.fragments();
+			for(VariableDeclarationFragment vdf : vdfList){
+				Element vdfElement = vdsElement.addElement("variableDeclarationFragment");
+				elements.put(vdf,vdfElement);
+			}
+		}
 		return super.visit(node);
 	}
 
@@ -1196,13 +1436,33 @@ public class XMLBuilder extends ASTVisitor {
 
 	@Override
 	public boolean visit(ArrayType node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		elem.addAttribute("dimensions", ""+node.getDimensions());
+		Type type = node.getElementType();
+		Element typeElement = elem.addElement("tp");
+		elements.put(type,typeElement);
+		tpVisit(type, typeElement);
+
 		return super.visit(node);
 	}
 
 	@Override
 	public boolean visit(ParameterizedType node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Type type = node.getType();
+		Element typeElement = elem.addElement("tp");
+		elements.put(type,typeElement);
+		tpVisit(type, typeElement);
+
+		//get TypeArgument
+		List<Type> taList = node.typeArguments();
+		Iterator<Type> itTa = taList.iterator();
+		while(itTa.hasNext()){
+			Type ta = itTa.next();
+			Element taElement = elem.addElement("typeArgument").addElement("tp");
+			elements.put(ta,taElement);
+		}
+
 		return super.visit(node);
 	}
 
@@ -1217,7 +1477,17 @@ public class XMLBuilder extends ASTVisitor {
 
 	@Override
 	public boolean visit(QualifiedType node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Type type = node.getQualifier();
+		Element typeElement = elem.addElement("tp");
+		elements.put(type,typeElement);
+		tpVisit(type, typeElement);
+
+		SimpleName sn = node.getName();
+		Element snElement = elem.addElement("simpleName");
+		elements.put(sn, snElement);
+
+
 		return super.visit(node);
 	}
 
@@ -1235,7 +1505,11 @@ public class XMLBuilder extends ASTVisitor {
 
 	@Override
 	public boolean visit(WildcardType node) {
-		// TODO Auto-generated method stub
+		Element elem = elements.get(node);
+		Type type = node.getBound();
+		Element typeElement = elem.addElement("tp");
+		elements.put(type,typeElement);
+		tpVisit(type, typeElement);
 		return super.visit(node);
 	}
 

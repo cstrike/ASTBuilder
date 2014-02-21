@@ -147,6 +147,8 @@
 <!ELEMENT arrayInitializer (expression+)>
 <!ELEMENT assignment (leftHandSide, assignmentOperator, rightHandSide)>
 <!ELEMENT leftHandSide (expression)>
+<!ELEMENT assignmentOperator (#PCDATA)>
+<!--
 <!ELEMENT assignmentOperator (assign | bit_and_assign | bit_or_assign | bit_xor_assign | divide_assign | left_shift_assign | minus_assign | plus_assign | remainder_assign | right_shift_signed_assign | right_shift_unsigned_assign | times_assign)>
 <!ELEMENT assign EMPTY>
 <!ELEMENT bit_and_assign EMPTY>
@@ -160,12 +162,13 @@
 <!ELEMENT right_shift_signed_assign EMPTY>
 <!ELEMENT right_shift_unsigned_assign EMPTY>
 <!ELEMENT times_assign EMPTY>
+-->
 <!ELEMENT rightHandSide (expression)>
 <!ELEMENT booleanLiteral (#PCDATA)> <!-- true or false -->
 <!ELEMENT castExpression (tp, expression)>
 <!ELEMENT characterLiteral (#PCDATA)>
-<!ELEMENT classInstanceCreation (expression, typeParemeter*, tp, arguments*, anonymousClassDeclaration)>
-<!ELEMENT arguments (expression)>
+<!ELEMENT classInstanceCreation (expression,  typeArgument*, tp, argument*, anonymousClassDeclaration)>
+<!ELEMENT argument (expression)>
 <!ELEMENT conditionalExpression (expression, thenExpression, elseExpression)>
 <!ELEMENT thenExpression (expression)>
 <!ELEMENT elseExpression (expression)>
@@ -174,6 +177,8 @@
 <!ATTLIST infixExpression hasExtendedOperands CDATA #REQUIRED>
 <!ELEMENT leftOperand (expression)>
 <!ELEMENT rightOperand (expression)>
+<!ELEMENT infixOperator (#PCDATA)>
+<!--
 <!ELEMENT infixOperator ( and | conditional_and | conditional_or | divide | equals | greater | greater_equals | left_shift | less | less_equals | minus | not_equals | or | plus | remainder | right_shift_signed | right_shift_unsigned | times | xor)>
 <!ELEMENT and EMPTY>
 <!ELEMENT conditional_and EMPTY>
@@ -194,23 +199,30 @@
 <!ELEMENT right_shift_unsigned EMPTY>
 <!ELEMENT times EMPTY>
 <!ELEMENT xor EMPTY>
+-->
 <!ELEMENT extendedOperands (expression)>
-<!ELEMENT instanceofExpression (expression, type)>
-<!ELEMENT methodInvocation (expression, typeParemeter*, simpleName, arguments*)>
+<!ELEMENT instanceofExpression (expression, tp)>
+<!ELEMENT methodInvocation (expression, typeArgument*, simpleName, argument*)>
 <!ELEMENT nullLiteral EMPTY>
 <!ELEMENT numberLiteral (#PCDATA)>
 <!ELEMENT parenthesizedExpression (expression)>
 <!ELEMENT postfixExpression (expression, postfixOperator)>
+<!ELEMENT postfixOperator (#PCDATA)>
+<!--
 <!ELEMENT postfixOperator ( decrement | increment )>
 <!ELEMENT decrement EMPTY>
 <!ELEMENT increment EMPTY>
+-->
 <!ELEMENT prefixExpression (prefixOperator, expression)>
+<!ELEMENT prefixOperator (#PCDATA)>
+<!--
 <!ELEMENT prefixOperator ( increment | decrement | plus | minus | complement | not)>
 <!ELEMENT complement EMPTY>
 <!ELEMENT not EMPTY>
+-->
 <!ELEMENT stringLiteral (#PCDATA)>
 <!ELEMENT superFieldAccess (name?, simpleName)>
-<!ELEMENT superMethodInvocation (name?, typeParameter*, simpleName, arguments*)>
+<!ELEMENT superMethodInvocation (name?, typeArgument*, simpleName, argument*)>
 <!ELEMENT thisExpression (name?)>
 <!ELEMENT typeLiteral (tp)>
 <!ELEMENT variableDeclarationExpression (modifier*, tp, variableDeclarationFragment+)>
