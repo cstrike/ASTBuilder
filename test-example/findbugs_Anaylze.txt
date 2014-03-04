@@ -1,0 +1,13 @@
+ private static boolean containsConcreteClasses(Set<JavaClass> s) {
+        for (JavaClass c : s)
+            if (!c.isInterface() && !c.isAbstract())
+                return true;
+        return false;
+    }
+
+private static boolean containsConcreteClasses(Set<JavaClass> s) {
+        if (s.stream().anyMatch((c) -> (!c.isInterface() && !c.isAbstract()))) {
+            return true;
+        }
+        return false;
+    }

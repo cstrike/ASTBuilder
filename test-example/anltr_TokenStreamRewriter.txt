@@ -1,0 +1,20 @@
+List<? extends InsertBeforeOp> prevInserts = getKindOfOps(rewrites, InsertBeforeOp.class, i);
+			for (InsertBeforeOp prevIop : prevInserts) {
+				if ( prevIop.index == iop.index ) { // combine objects
+					// convert to strings...we're in process of toString'ing
+					// whole token buffer so no lazy eval issue with any templates
+					iop.text = catOpText(iop.text,prevIop.text);
+                    // delete redundant prior insert
+                    rewrites.set(prevIop.instructionIndex, null);
+				}
+			}
+
+
+
+List<? extends InsertBeforeOp> prevInserts = getKindOfOps(rewrites, InsertBeforeOp.class, i);
+                        prevInserts.stream().filter((prevIop) -> ( prevIop.index == iop.index )).map((prevIop) -> {
+                        iop.text = catOpText(iop.text,prevIop.text);
+                        return prevIop;
+                    }).forEach((prevIop) -> {
+                        rewrites.set(prevIop.instructionIndex, null);
+                    });

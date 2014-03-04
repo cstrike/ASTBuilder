@@ -1,0 +1,15 @@
+ for(Plugin plugin : pluginsToLoad) {
+            if (forceLoad || plugin.isGloballyEnabled() && !plugin.isCorePlugin()) {
+                loadPlugin(plugin);
+                if(!enabledPlugins.contains(plugin)) {
+                    enabledPlugins.add(plugin);
+                }
+            }
+        }
+
+ pluginsToLoad.stream().filter((plugin) -> (forceLoad || plugin.isGloballyEnabled() && !plugin.isCorePlugin())).map((plugin) -> {
+            loadPlugin(plugin);
+            return plugin;
+        }).filter((plugin) -> (!enabledPlugins.contains(plugin))).forEach((plugin) -> {
+            enabledPlugins.add(plugin);
+        });

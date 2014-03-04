@@ -1,0 +1,17 @@
+for (BugAnnotation b : getAnnotations()) {
+            if (primaryAnnotations.contains(b))
+                continue;
+            if (b instanceof LocalVariableAnnotation && !((LocalVariableAnnotation) b).isNamed())
+                continue;
+            if (b instanceof SourceLineAnnotation && ((SourceLineAnnotation) b).isUnknown())
+                continue;
+            result.add(b);
+        }
+        return result;
+
+
+
+  getAnnotations().stream().filter((b) -> !(primaryAnnotations.contains(b))).filter((b) -> !(b instanceof LocalVariableAnnotation && !((LocalVariableAnnotation) b).isNamed())).filter((b) -> !(b instanceof SourceLineAnnotation && ((SourceLineAnnotation) b).isUnknown())).forEach((b) -> {
+            result.add(b);
+        });
+        return result;

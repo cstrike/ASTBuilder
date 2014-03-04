@@ -1,0 +1,25 @@
+public Collection<ParseTree> evaluate(ParseTree t) {
+				// return all children of t that match nodeName
+		List<ParseTree> nodes = new ArrayList<ParseTree>();
+		for (Tree c : Trees.getChildren(t)) {
+			if ( c instanceof ParserRuleContext ) {
+				ParserRuleContext ctx = (ParserRuleContext)c;
+				if ( (ctx.getRuleIndex() == ruleIndex && !invert) ||
+					 (ctx.getRuleIndex() != ruleIndex && invert) )
+				{
+					nodes.add(ctx);
+				}
+			}
+		}
+		return nodes;
+	}
+
+public Collection<ParseTree> evaluate(ParseTree t) {
+				// return all children of t that match nodeName
+		List<ParseTree> nodes = new ArrayList<ParseTree>();
+                Trees.getChildren(t).stream().filter((c) -> ( c instanceof ParserRuleContext )).map((c) -> (ParserRuleContext)c).filter((ctx) -> ( (ctx.getRuleIndex() == ruleIndex && !invert) ||
+                    (ctx.getRuleIndex() != ruleIndex && invert) )).forEach((ctx) -> {
+                                             nodes.add(ctx);
+            });
+		return nodes;
+	}
