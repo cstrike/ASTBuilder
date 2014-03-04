@@ -128,11 +128,27 @@
 <!ELEMENT tryStatement (block, (catchClause+ | (catchClause*, finally)))>
 <!ELEMENT catchClause (formalParameter, block)>
 <!ELEMENT finally (block)>
-<!ELEMENT enhancedForStatement (itVariable, itCollection, statement, operation?)>
+
+
+<!ELEMENT enhancedForStatement (itVariable, itCollection, prospectiveOperations)>
 <!ATTLIST enhancedForStatement 
 	  opStmtType CDATA #REQUIRED>
 <!ELEMENT itVariable (tp, variableDeclarator)>
 <!ELEMENT itCollection (expression)>
+<!ELEMENT prospectiveOperations ((ifOperation | mapOperation)*, eagerOperation)>
+<!ELEMENT ifOperation (expression)>
+<!ATTLIST ifOperation marker CDATA #REQUIRED
+			neededVar CDATA #REQUIRED>
+			superOperation CDATA #REQUIRED>
+<!ELEMENT mapOperation (block | expression)>
+<!ATTLIST mapOperation marker CDATA #REQUIRED
+			neededVar CDATA #REQUIRED
+			superOperation CDATA #REQUIRED>
+<!ELEMENT eagerOperation (block)>
+<!ATTLIST eagerOperation marker CDATA #REQUIRED
+			neededVar CDATA #REQUIRED
+			superOperation CDATA #REQUIRED>
+ 
 <!ELEMENT operation (opId, opName, parameterPart, operation?)>
 <!ELEMENT opId (#PCDATA)>
 <!ELEMENT opName (#PCDATA)>
