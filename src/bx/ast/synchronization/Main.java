@@ -13,7 +13,7 @@ import bx.ast.xml.XMLBuilder;
 
 public class Main {
 	public static void main(String[] args){
-		String fileName = "./test/Test.java";
+		String fileName = "./test/Test1.java";
 		ASTBuilder ast = new ASTBuilder(readFile(fileName));
 		XMLBuilder xml = new XMLBuilder();
 		ast.astRootNode.accept(xml);

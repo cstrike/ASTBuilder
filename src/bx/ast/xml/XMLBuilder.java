@@ -423,6 +423,9 @@ public class XMLBuilder extends ASTVisitor {
 		if(myStmt != null){
 			Element myStmtElement = stmtElement.addElement(myStmt.getClass().getSimpleName().substring(0, 1).toLowerCase()+myStmt.getClass().getSimpleName().substring(1));
 			elements.put(myStmt, myStmtElement);
+			if(myStmt instanceof Block){
+				blockVisit((Block)myStmt, myStmtElement);
+			}
 		}
 	}
 
@@ -1001,14 +1004,15 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(CastExpression node) {
 		Element castElement = elements.get(node);
-		Type tp = node.getType();
-		Element tpElement = castElement.addElement("tp");
-		tpVisit(tp, tpElement);
+		if(castElement != null){
+			Type tp = node.getType();
+			Element tpElement = castElement.addElement("tp");
+			tpVisit(tp, tpElement);
 
-		Expression exp = node.getExpression();
-		Element expElement = castElement.addElement("expression");
-		expVisit(exp, expElement);
-
+			Expression exp = node.getExpression();
+			Element expElement = castElement.addElement("expression");
+			expVisit(exp, expElement);
+		}
 		return super.visit(node);
 	}
 
@@ -1083,14 +1087,16 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(FieldAccess node) {
 		Element faElement = elements.get(node);
-		Expression exp = node.getExpression();
-		Element expElement = faElement.addElement("expression");
-		elements.put(exp, expElement);
-		expVisit(exp, expElement);
+		if(faElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = faElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
 
-		SimpleName sn = node.getName();
-		Element snElement = faElement.addElement("simpleName");
-		elements.put(sn, snElement);
+			SimpleName sn = node.getName();
+			Element snElement = faElement.addElement("simpleName");
+			elements.put(sn, snElement);
+		}
 		return super.visit(node);
 	}
 
@@ -1128,16 +1134,17 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(InstanceofExpression node) {
 		Element ioeElement = elements.get(node);
-		Expression exp = node.getLeftOperand();
-		Element expElement = ioeElement.addElement("expression");
-		elements.put(exp, expElement);
-		expVisit(exp, expElement);
+		if(ioeElement != null){
+			Expression exp = node.getLeftOperand();
+			Element expElement = ioeElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
 
-		Type type = node.getRightOperand();
-		Element typeElement = ioeElement.addElement("tp");
-		elements.put(type, typeElement);
-		tpVisit(type, typeElement);
-
+			Type type = node.getRightOperand();
+			Element typeElement = ioeElement.addElement("tp");
+			elements.put(type, typeElement);
+			tpVisit(type, typeElement);
+		}
 		return super.visit(node);
 	}
 
@@ -1192,10 +1199,12 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(ParenthesizedExpression node) {
 		Element peElement = elements.get(node);
-		Expression exp = node.getExpression();
-		Element expElement = peElement.addElement("expression");
-		elements.put(exp, expElement);
-		expVisit(exp, expElement);
+		if(peElement != null){
+			Expression exp = node.getExpression();
+			Element expElement = peElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
+		}
 		return super.visit(node);
 	}
 
@@ -1216,14 +1225,16 @@ public class XMLBuilder extends ASTVisitor {
 	@Override
 	public boolean visit(PrefixExpression node) {
 		Element peElement = elements.get(node);
-		Expression exp = node.getOperand();
-		Element expElement = peElement.addElement("expression");
-		elements.put(exp, expElement);
-		expVisit(exp, expElement);
+		if(peElement != null){
+			Expression exp = node.getOperand();
+			Element expElement = peElement.addElement("expression");
+			elements.put(exp, expElement);
+			expVisit(exp, expElement);
 
-		org.eclipse.jdt.core.dom.PrefixExpression.Operator op = node.getOperator();
-		Element opElement = peElement.addElement("prefixOperator");
-		opElement.setText(op.toString());
+			org.eclipse.jdt.core.dom.PrefixExpression.Operator op = node.getOperator();
+			Element opElement = peElement.addElement("prefixOperator");
+			opElement.setText(op.toString());
+		}
 		return super.visit(node);
 	}
 
